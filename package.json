@@ -1,7 +1,7 @@
 {
-  "name": "Lectrum",
+  "name": "Podcast",
   "version": "0.1.0",
-  "homepage" : "http://myname.github.io/",
+  "homepage": "http://myname.github.io/",
   "private": true,
   "dependencies": {
     "autoprefixer": "7.1.2",
@@ -51,6 +51,9 @@
   "scripts": {
     "start-js": "node scripts/start.js",
     "start": "npm run start-js",
+    "lint": "npm run lint-js && npm run lint-css",
+    "lint-js": "eslint src",
+    "lint-css": "scss-lint -c .scss-lint.yml",
     "test": "node scripts/test.js --env=jsdom",
     "setup": "sh scripts/setup.sh",
     "build": "node scripts/build.js"
