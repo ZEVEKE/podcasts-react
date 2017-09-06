@@ -1,0 +1,62 @@
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
+
+import Styles from './styles.scss';
+
+export default class PodcastsList extends Component {
+    static propTypes = {
+        podcasts:      PropTypes.array.isRequired,
+        onOpenPodcast: PropTypes.func.isRequired
+    };
+
+    constructor () {
+        super();
+
+        this.findPodcastById = ::this._findPodcastById;
+    }
+
+    _findPodcastById (id) {
+        const { podcasts } = this.props;
+
+        for (const p of podcasts) {
+            if (p.id === id) {
+                return p;
+            }
+        }
+    }
+
+    render () {
+        const { podcasts, onOpenPodcast } = this.props;
+        const podcastsList = podcasts.map((p) => (
+            <li key = { p.id }>
+                <a onClick = { () => onOpenPodcast('open', p) }>
+                    <img src = { p.image } />
+                </a>
+                <a onClick = { () => onOpenPodcast('open', p) }>
+
+                    <h2>
+                        { p.title }
+                    </h2>
+                    <span>
+                        { p.author }
+                    </span>
+                </a>
+            </li>
+        ));
+
+        return (
+            <section className = { Styles.podcastsListComponent }>
+                <h1 className = { Styles.head }>Podcasts</h1>
+                <ul>
+                    { podcastsList }
+                </ul>
+                <input
+                    className = { Styles.add }
+                    type = 'button'
+                    value = 'New'
+                    onClick = { () => onOpenPodcast('create') }
+                />
+            </section>
+        );
+    }
+}

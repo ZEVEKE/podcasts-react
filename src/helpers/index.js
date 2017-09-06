@@ -1,9 +1,12 @@
 // Core
 import moment from 'moment';
 
-export const getCurrentTime = () => moment().format('MMMM D h:mm:ss a');
+export const getCurrentTime = () => moment().format();
 
 export const getUniqueID = (length) => {
+    if (typeof length !== 'number') {
+        throw new Error(`passed argument should be a number`);
+    }
     let text = '';
     const possible =
         'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';

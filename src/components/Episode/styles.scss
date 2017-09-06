@@ -1,0 +1,25 @@
+@import '../../theme/palette';
+
+.episodeComponent {
+    display: flex;
+    position: relative;
+    width: 700px;
+    padding: 12px;
+    border: 1px solid $paletteGrey, 15%;
+    border-radius: 3px;
+    background-color: $palettePad;
+
+    checkbox {
+        width: 10px;
+        height: 10px;
+    }
+
+    ::-webkit-scrollbar {
+        display: none;
+    }
+
+    form.editing {
+        display: flex;
+        flex-direction: column;
+    }
+}

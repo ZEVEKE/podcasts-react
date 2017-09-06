@@ -1,0 +1,19 @@
+@import '../../theme/palette';
+
+.mainComponent {
+    display: flex;
+    position: fixed;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    width: 100%;
+    height: 100%;
+    min-height: 600px;
+    padding: 50px 60px;
+    background-color: $paletteLightGrey;
+    color: $paletteDarkGrey;
+
+    ::-webkit-scrollbar {
+        display: none;
+    }
+}
