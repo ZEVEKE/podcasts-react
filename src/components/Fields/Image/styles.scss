@@ -1,0 +1,42 @@
+@import '../../../theme/palette';
+
+.imageComponent {
+    width: 170px;
+    height: 170px;
+    margin-bottom: 24px;
+    box-shadow: $paletteShadow;
+
+    &.editMode {
+        position: relative;
+
+        .image {
+            opacity: .6;
+
+            &:hover {
+                opacity: .8;
+            }
+        }
+
+        .chooseCover {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 170px;
+            height: 170px;
+            opacity: .5;
+            cursor: pointer;
+
+            &:hover {
+                opacity: .7;
+            }
+        }
+
+        [type='file'] {
+            position: absolute;
+            z-index: -1;
+            top: 0;
+            left: 0;
+            opacity: 0;
+        }
+    }
+}

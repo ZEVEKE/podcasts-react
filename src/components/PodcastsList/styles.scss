@@ -2,7 +2,6 @@
 
 .podcastsListComponent {
     position: relative;
-    height: 100%;
     min-height: 540px;
     padding: 24px 40px;
     background-color: $palettePad;
@@ -21,10 +20,8 @@
         justify-content: flex-start;
         width: 848px;
         min-height: 200px;
-        max-height: 80%;
         margin-top: 50px;
         padding: 0 20px;
-        overflow: scroll;
         list-style: none;
 
         li {
@@ -81,7 +78,7 @@
         }
     }
 
-    .add {
+    .addPodcast {
         position: absolute;
         right: 60px;
         bottom: 34px;

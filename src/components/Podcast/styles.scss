@@ -8,23 +8,35 @@
     background-color: $palettePad;
     font-family: Arial, Verdana, sans-serif;//'Lucida Sans',Helvetica
 
-    .editMode [type='text'], .editMode [type='email'] {
-        display: inline-block;
+    [type='text'], [type='email'] {
         width: 100%;
-        padding: .1em;
-        border: 1px solid darken($paletteLightGrey, 7%);
+        padding: .08em .3em;
+        border: 0;
         outline: 0;
+        box-shadow: $paletteLightShadow;
         color: $paletteGrey;
-        font-size: .8em;
+        font-size: .9em;
+
+        &::placeholder {
+            color: darken($paletteLightGrey, 10%);
+            font-size: .9em;
+            font-weight: normal;
+        }
     }
 
     select {
-        border: 1px solid darken($paletteLightGrey, 7%);
+        border: 0;
         outline: 0;
         background-color: $paletteWhite;
+        box-shadow: $paletteLightShadow;
+        color: $paletteGrey;
+
+        &::placeholder {
+            color: darken($paletteLightGrey, 10%);
+        }
     }
 
-    .editBtn, .saveBtn, .cancelBtn {
+    .btnEditPodcast, .btnSave, .btnCancel {
         position: absolute;
         width: 80px;
         height: 28px;
@@ -36,27 +48,27 @@
         line-height: 15px;
         cursor: pointer;
 
-        &.editBtn, &.saveBtn {
+        &.btnEditPodcast, &.btnSave {
             top: 30px;
             right: 30px;
             border: 1px solid $paletteBlue;
             background-color: $paletteBlue;
 
             &:hover {
-                transition: all .1s ease-in;
+                transition: all .15s ease-in;
                 border: 1px solid darken($paletteBlue, 5%);
                 background-color: darken($paletteBlue, 5%);
             }
         }
 
-        &.cancelBtn {
+        &.btnCancel {
             top: 30px;
             right: 130px;
             border: 1px solid $paletteGrey;
             background-color: $paletteGrey;
 
             &:hover {
-                transition: all .1s ease-in;
+                transition: all .15s ease-in;
                 border: 1px solid darken($paletteGrey, 8%);
                 background-color: darken($paletteGrey, 8%);
             }
@@ -64,27 +76,34 @@
     }
 
     .header {
-        margin-bottom: 2.2em;
+        width: 600px;
+        margin: 0 0 2.2em;
 
-        .title {
-            display: inline-block;
-            max-width: 100%;
-            margin: 0 0 6px;
-            color: $paletteDarkGrey;
-            font-size: 22px;
-            font-weight: bold;
-            line-height: 28px;
-        }
+        //.title {
+        //    display: block;
+        //    margin: 0;
+        //    color: $paletteDarkGrey;
+        //    font-size: 22px;
+        //    font-weight: bold;
+        //    line-height: 28px;
+        //}
 
-        .author {
-            display: block;
-            margin: 0;
-            clear: both;
-            color: $paletteDarkGrey;
-            font-size: 17px;
-            font-weight: bold;
-            line-height: 24px;
-        }
+        //.subtitle {
+        //    display: block;
+        //    color: $paletteDarkGrey;
+        //    font-style: italic;
+        //    font-weight: normal;
+        //}
+        //
+        //.author {
+        //    display: block;
+        //    margin: 6px 0 0;
+        //    clear: both;
+        //    color: $paletteDarkGrey;
+        //    font-size: 17px;
+        //    font-weight: bold;
+        //    line-height: 24px;
+        //}
     }
 
     .padder {
@@ -94,74 +113,91 @@
         margin: 0;
 
         .leftStack {
+            width: 170px;
             color: $paletteGrey;
 
-            img {
-                min-width: 170px;
-                min-height: 170px;
-                margin-bottom: 24px;
-                box-shadow: $paletteShadow;
+            //.imageElement {
+            //    width: 170px;
+            //    height: 170px;
+            //    margin-bottom: 24px;
+            //    box-shadow: $paletteShadow;
+            //
+            //    &.editMode {
+            //        position: relative;
+            //
+            //        .image {
+            //            opacity: .6;
+            //
+            //            &:hover {
+            //                opacity: .8;
+            //            }
+            //        }
+            //
+            //        .chooseCover {
+            //            position: absolute;
+            //            top: 0;
+            //            left: 0;
+            //            width: 170px;
+            //            height: 170px;
+            //            opacity: .5;
+            //            cursor: pointer;
+            //
+            //            &:hover {
+            //                opacity: .7;
+            //            }
+            //        }
+            //
+            //        [type='file'] {
+            //            position: absolute;
+            //            z-index: -1;
+            //            top: 0;
+            //            left: 0;
+            //            opacity: 0;
+            //        }
+            //    }
+            //}
 
-                &.editMode {
-                    position: relative;
-                    z-index: 1;
-                    border: 1px solid $paletteGrey;
-                    opacity: .85;
-                    background-color: $paletteLightGrey;
-                    cursor: pointer;
+            //div {
+            //    margin: 0;
+            //    padding: 0;
+            //    list-style: none outside;
+            //    font-size: 12px;
+            //
+            //    div {
+            //        line-height: 1.4em;
+            //
+            //        span {
+            //            display: inline-block;
+            //            min-width: 65px;
+            //            margin-top: .5em;
+            //            font-size: .9em;
+            //            font-weight: bolder;
+            //        }
+            //
+            //        div {
+            //            padding: 0;
+            //        }
+            //    }
+            //}
 
-                    &:after {
-                        content: 'Choose podcast cover';
-                        position: absolute;
-                        left: 0;
-                        width: 170px;
-                        height: 170px;
-                        color: $paletteGrey;
-                        font-size: 12px;
-                        line-height: 170px;
-                        text-align: center;
-                    }
-
-                    &:hover {
-                        opacity: .6;
-                    }
-                }
-            }
-
-            input[type='file'] {
-                position: absolute;
-                z-index: -1;
-                top: 0;
-                left: 0;
-                opacity: 0;
-            }
-
-            ul {
-                margin: 0;
-                padding: 0;
-                list-style: none outside;
-                font-size: 12px;
-
-                li {
-                    margin: 0 0 .8em;
-                    padding: 0;
-                }
-            }
-
-            .owner {
-                margin-top: 80px;
-
-                h5 {
-                    margin-bottom: .8em;
-                    color: $paletteGrey;
-                    font-size: 10px;
-                }
-
-                div {
-                    margin: 0 0 .2em;
-                    font-size: 12px;
-                }
-            }
+            //.owner {
+            //    margin-top: 5em;
+            //
+            //    &.editMode {
+            //        margin-top: 9px;
+            //    }
+            //
+            //    h5 {
+            //        margin-bottom: .8em;
+            //        color: $paletteGrey;
+            //        font-size: .9em;
+            //    }
+            //
+            //    div {
+            //        font-size: 12px;
+            //        line-height: 1.4em;
+            //    }
+            //}
         }
 
         .centerStack {
@@ -169,18 +205,28 @@
             margin-left: 30px;
             color: $paletteGrey;
 
-            h4 {
-                margin-bottom: 8px;
-                color: $paletteDarkGrey;
-            }
+            .description {
+                h4 {
+                    margin-bottom: 12px;
+                    color: $paletteDarkGrey;
+                }
 
-            p {
-                margin: 0 0 18px;
-                font-size: 12px;
+                p {
+                    margin: 0;
+                    font-size: 12px;
+
+                    & textarea {
+                        max-width: 56.4em;
+                        height: 4em;
+                        padding: .5em;
+                    }
+                }
             }
 
             .episodesTable {
-                padding: 20px 24px 18px 16px;
+                position: relative;
+                margin-top: 54px;
+                padding: 20px 26px 32px 16px;
                 border-bottom: 1px solid darken($paletteLightGrey, 1%);
                 border-radius: 2px;
                 background-color: $paletteLightGrey;
@@ -199,81 +245,31 @@
                     }
                 }
 
-                .table {
+                .episodesList {
                     margin: 0;
                     padding: 0;
+                    list-style: none;
+                }
 
-                    li {
-                        display: grid;
-                        position: relative;
-                        margin-top: -1px;
-                        padding: 3px 0 3px 24px;
-                        grid-template-columns: 5% 18% 29% 19% 14% 9%;
-                        grid-column-gap: 1.5%;
+                .btnAddEpisode {
+                    display: inline-block;
+                    position: absolute;
+                    bottom: 16px;
+                    left: 40px;
+                    padding: 0;
+                    transition: all .15s ease;
+                    border: 0;
+                    border-radius: 1px;
+                    outline: 0;
+                    background-color: transparent;
+                    color: $paletteBlue;
+                    font-size: 10px;
+                    text-decoration: underline;
+                    cursor: pointer;
+                }
 
-                        span {
-                            overflow: hidden;
-                            font-size: 12px;
-                            line-height: 20px;
-                            text-overflow: ellipsis;
-                            white-space: nowrap;
-                        }
-
-                        .explicit {
-                            text-align: center;
-                        }
-
-                        .edit {
-                            position: absolute;
-                            top: 0;
-                            left: 0;
-                            width: 100%;
-                            height: 100%;
-                            transition: background-color .1s ease;
-                            border: 0;
-                            border-top: 1px solid transparent;
-                            border-bottom: 1px solid darken($paletteLightGrey, 5%);
-                            border-left: 1px solid transparent;
-                            border-radius: 2px;
-                            outline: 0;
-                            opacity: .7;
-                            background: url('../../theme/assets/edit.png') no-repeat 10px;
-                            background-size: 4px;
-                            cursor: pointer;
-
-                            &:hover {
-                                border: 1px solid lighten($paletteGreyBlue, 50%);
-                                opacity: .5;
-                                background-color: lighten($paletteGreyBlue, 50%);
-                            }
-                        }
-
-                        .delete {
-                            position: absolute;
-                            right: -24px;
-                            width: 24px;
-                            height: 100%;
-                            transition: background-color .1s ease;
-                            border: 0;
-                            border-radius: 2px;
-                            outline: 0;
-                            opacity: .7;
-                            background: url('../../theme/assets/cross.png') no-repeat 10px;
-                            background-size: 5px;
-                            cursor: pointer;
-
-                            &:hover {
-                                opacity: .6;
-                                background-color: lighten($paletteRed, 55%);
-                            }
-                        }
-                    }
-
-                    .add {
-                        display: block;
-                        color: $paletteBlue;
-                        font-size: 12px;
-                    }
+                &.editMode {
+                    margin-top: 10px;
                 }
             }
         }

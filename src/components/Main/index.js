@@ -1,11 +1,13 @@
 import React, { Component } from 'react';
 
+import { Transition } from 'react-transition-group';
+import TweenMax from 'gsap';
+
 import Styles from './styles.scss';
-import { data, emptyEpisode, emptyPodcast } from '../Mock/index';
+import { data } from '../Mock/index';
 
 import PodcastsList from '../PodcastsList';
 import Podcast from '../Podcast';
-import Episode from '../Episode';
 
 export default class Main extends Component {
     constructor () {
@@ -13,100 +15,135 @@ export default class Main extends Component {
 
         this.fetchPodcasts = ::this._fetchPodcasts;
 
-        this.onSavePodcast = ::this._onSavePodcast;
+        // this.onSavePodcast = ::this._onSavePodcast;
         this.onOpenPodcast = ::this._onOpenPodcast;
-        this.onOpenEpisode = ::this._onOpenEpisode;
+        this.handlePodcastsListAppear = ::this._handlePodcastsListAppear;
+        this.handlePodcastsListDisappear = ::this._handlePodcastsListDisappear;
+        this.handlePodcastAppear = ::this._handlePodcastAppear;
+        this.handlePodcastDisappear = ::this._handlePodcastDisappear;
+        this.handleEpisodeAppear = ::this._handleEpisodeAppear;
+        this.handleEpisodeDisappear = ::this._handleEpisodeDisappear;
     }
 
     state = {
-        posts:   [],
-        page:    `main`,
         current: {
-            mode: ''
-        }
+            mode: 'normal'
+        },
+        page:     `main`,
+        podcasts: []
     };
 
     componentWillMount () {
         this.fetchPodcasts();
     }
 
-    _onOpenPodcast (mode, podcast = emptyPodcast) {
+    _onOpenPodcast (podcast, mode, isNew) {
         this.setState({
-            page:    'podcast',
             current: {
+                isNew,
                 mode,
                 podcast
-            }
+            },
+            page: 'podcast'
         });
     }
 
-    _onSavePodcast (podcast) {
-        // TODO
-    }
-
-    _onOpenEpisode (mode, episode = emptyEpisode) {
-        this.setState({
-            page:    'episode',
-            current: {
-                mode,
-                episode
-            }
-        });
-    }
+    // _onSavePodcast (podcast) {
+    //     TODO
+    // }
 
     _fetchPodcasts () {
         this.setState({ podcasts: data });
     }
 
+    // Transitions
+
+    _handlePodcastsListAppear () {
+        const { podcastsList } = this;
+        // console.log('_handlePodcastsListAppear');
+
+        TweenMax.fromTo(podcastsList, 0.6, { y: -800 }, { y: 0 });
+    }
+
+    _handlePodcastsListDisappear () {
+        const { podcastsList } = this;
+        // console.log('_handlePodcastsListDisappear');
+
+        TweenMax.fromTo(podcastsList, 0.6, { y: 0 }, { y: 800 });
+    }
+
+    _handlePodcastAppear () {
+        const { podcast } = this;
+        // console.log('_handlePodcastAppear');
+
+        TweenMax.fromTo(podcast, 0.6, { y: -800 }, { y: 0 });
+    }
+
+    _handlePodcastDisappear () {
+        const { podcast } = this;
+        // console.log('_handlePodcastDisappear');
+
+        TweenMax.fromTo(podcast, 0.6, { x: 0 }, { x: -1000 });
+    }
+
+    _handleEpisodeAppear () {
+        const { episode } = this;
+
+        TweenMax.fromTo(episode, 0.6, { y: -800 }, { y: 0 });
+    }
+
+    _handleEpisodeDisappear () {
+        const { episode } = this;
+
+        TweenMax.fromTo(episode, 0.6, { x: 0 }, { x: 1000 });
+    }
+
     render () {
         const {
-            podcasts: podcastsList,
+            current,
             page,
-            current
+            podcasts
         } = this.state;
-        let content = '';
 
-        switch (page) {
-            case 'main':
-                content = (
-                    <section className = { Styles.mainComponent } >
-                        <PodcastsList
-                            podcasts = { podcastsList }
-                            onOpenPodcast = { this.onOpenPodcast }
-                        />
-                    </section>
-                );
-                break;
+        const podcastsList = page === 'main' ? (
+            <Transition
+                appear
+                in
+                timeout = { 600 }
+                onEnter = { this.handlePodcastsListAppear }
+                onExit = { this.handlePodcastsListDisappear }>
+                <div ref = { (list) => this.podcastsList = list } >
+                    <PodcastsList
+                        podcasts = { podcasts }
+                        onOpenPodcast = { this.onOpenPodcast }
+                    />
+                </div>
+            </Transition>
+        ) : null;
 
-            case 'podcast':
-                content = (
-                    <section className = { Styles.mainComponent } >
-                        <Podcast
-                            mode = { current.mode }
-                            podcast = { current.podcast }
-                            onOpenEpisode = { this.onOpenEpisode }
-                            onOpenPodcast = { this.onOpenPodcast }
-                            onSavePodcast = { this.onSavePodcast }
-                        />
-                    </section>
-                );
-                break;
+        const podcast = page === 'podcast' ? (
+            <Transition
+                appear
+                in
+                timeout = { 600 }
+                onEnter = { this.handlePodcastAppear }
+                onExit = { this.handlePodcastDisappear }>
+                <div ref = { (p) => this.podcast = p } >
+                    <Podcast
+                        isNew = { false }
+                        mode = { current.mode }
+                        podcast = { current.podcast }
+                        onSavePodcast = { this.onSavePodcast }
+                    />
+                </div>
+            </Transition>
+        ) : null;
 
-            case 'episode':
-                content = (
-                    <section className = { Styles.mainComponent } >
-                        <Episode
-                            episode = { current.episode }
-                            mode = { current.mode }
-                        />
-                    </section>
-                );
-                break;
-
-            default:
-                break;
-        }
-
-        return content;
+        return (
+            <section className = { Styles.mainComponent } >
+                { podcastsList }
+                { podcast }
+            </section>
+        );
     }
 }

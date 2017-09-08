@@ -1,0 +1,19 @@
+@import '../../../theme/palette';
+
+.description {
+    h4 {
+        margin-bottom: 12px;
+        color: $paletteDarkGrey;
+    }
+
+    p {
+        margin: 0;
+        font-size: 12px;
+
+        & textarea {
+            max-width: 56.4em;
+            height: 4em;
+            padding: .5em;
+        }
+    }
+}

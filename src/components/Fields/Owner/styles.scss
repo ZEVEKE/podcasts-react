@@ -1,0 +1,20 @@
+@import '../../../theme/palette';
+
+.owner {
+    margin-top: 5em;
+
+    &.editMode {
+        margin-top: 9px;
+    }
+
+    h5 {
+        margin-bottom: .8em;
+        color: $paletteGrey;
+        font-size: .9em;
+    }
+
+    div {
+        font-size: 12px;
+        line-height: 1.4em;
+    }
+}

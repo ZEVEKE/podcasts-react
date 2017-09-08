@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
 import Styles from './styles.scss';
+import { emptyPodcast } from '../Mock/index';
 
 export default class PodcastsList extends Component {
     static propTypes = {
@@ -29,11 +30,10 @@ export default class PodcastsList extends Component {
         const { podcasts, onOpenPodcast } = this.props;
         const podcastsList = podcasts.map((p) => (
             <li key = { p.id }>
-                <a onClick = { () => onOpenPodcast('open', p) }>
+                <a onClick = { () => onOpenPodcast(p, 'normal', false) }>
                     <img src = { p.image } />
                 </a>
-                <a onClick = { () => onOpenPodcast('open', p) }>
-
+                <a onClick = { () => onOpenPodcast(p, 'normal', false) }>
                     <h2>
                         { p.title }
                     </h2>
@@ -46,15 +46,15 @@ export default class PodcastsList extends Component {
 
         return (
             <section className = { Styles.podcastsListComponent }>
-                <h1 className = { Styles.head }>Podcasts</h1>
+                <h1>Podcasts</h1>
                 <ul>
                     { podcastsList }
                 </ul>
                 <input
-                    className = { Styles.add }
+                    className = { Styles.addPodcast }
                     type = 'button'
                     value = 'New'
-                    onClick = { () => onOpenPodcast('create') }
+                    onClick = { () => onOpenPodcast(emptyPodcast, 'edit', true) }
                 />
             </section>
         );

@@ -1,72 +1,29 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import moment from 'moment';
 
-import { languages, categories } from '../Mock';
+import { categories, emptyEpisode, languages } from '../Mock';
 
+import Episode from '../Episode';
+import * as Fields from '../Fields';
 import Styles from './styles.scss';
 
 export default class Podcast extends Component {
     static propTypes = {
-        mode:          PropTypes.string.isRequired,
-        onOpenEpisode: PropTypes.func.isRequired,
-        podcast:       PropTypes.objectOf((propValue, key, componentName) => {
-            const receivedType = typeof propValue[key];
-            let expectedType = '';
-            const errMessage = (expType) => `Invalid prop 'podcast.${key}' of type '${receivedType}' supplied to '${componentName}', expected '${expType}'.`;
-
-            switch (key) {
-                // expected 'string'
-                case 'id':
-                case 'vendor':
-                case 'title':
-                case 'subtitle':
-                case 'description':
-                case 'language':
-                case 'author':
-                case 'image':
-                    expectedType = 'string';
-
-                    if (receivedType !== expectedType) {
-                        return new Error(errMessage(expectedType));
-                    }
-
-                    break;
-
-                // expected 'boolean'
-                case 'explicit':
-                case 'complete':
-                    expectedType = 'boolean';
-
-                    if (receivedType !== expectedType) {
-                        return new Error(errMessage(expectedType));
-                    }
-
-                    break;
-
-                // expected 'object'
-                case 'owner':
-                case 'category':
-                    expectedType = 'object';
-
-                    if (receivedType !== expectedType) {
-                        return new Error(errMessage(expectedType));
-                    }
-
-                    break;
-
-                // expected 'array'
-                case 'episodes':
-                    expectedType = 'array';
-                    if (receivedType !== expectedType) {
-                        return new Error(errMessage(expectedType));
-                    }
-
-                    break;
-
-                default:
-                    break;
-            }
+        mode:    PropTypes.string.isRequired,
+        podcast: PropTypes.shape({
+            author:      PropTypes.string.isRequired,
+            category:    PropTypes.object.isRequired,
+            complete:    PropTypes.bool.isRequired,
+            description: PropTypes.string.isRequired,
+            episodes:    PropTypes.array.isRequired,
+            explicit:    PropTypes.bool.isRequired,
+            id:          PropTypes.string.isRequired,
+            image:       PropTypes.string.isRequired,
+            language:    PropTypes.string.isRequired,
+            owner:       PropTypes.object.isRequired,
+            subtitle:    PropTypes.string.isRequired,
+            title:       PropTypes.string.isRequired,
+            vendor:      PropTypes.string.isRequired
         })
     };
 
@@ -74,46 +31,51 @@ export default class Podcast extends Component {
         super();
 
         // on element click handlers
-        this.handleDeleteEpisodeClicked = ::this._handleDeleteEpisodeClicked;
-        this.handleEditPodcastClicked = ::this._handleEditPodcastClicked;
-        this.handleSavePodcastClicked = ::this._handleSavePodcastClicked;
-        this.handleCancelClicked = ::this._handleCancelClicked;
-        this.handleImageClicked = ::this._handleImageClicked;
+        this.onDeleteEpisodeClicked = ::this._onDeleteEpisodeClicked;
+        this.onEditPodcastClicked = ::this._onEditPodcastClicked;
+        this.onSavePodcastClicked = ::this._onSavePodcastClicked;
+        this.onCancelClicked = ::this._onCancelClicked;
+        // this.onImageClicked = ::this._onImageClicked;
+
+        this.onAddEpisode = ::this._onAddEpisode;
 
         // on element change handlers
-        this.handleAuthorChanged = ::this._handleAuthorChanged;
-        this.handleCategoryChanged = ::this._handleCategoryChanged;
-        this.handleCompleteChanged = ::this._handleCompleteChanged;
-        this.handleDescriptionChanged = ::this._handleDescriptionChanged;
-        this.handleExplicitChanged = ::this._handleExplicitChanged;
-        this.handleIdChanged = ::this._handleIdChanged;
-        this.handleImageChanged = ::this._handleImageChanged;
-        this.handleLanguageChanged = ::this._handleLanguageChanged;
-        this.handleOwnerNameChanged = ::this._handleOwnerNameChanged;
-        this.handleOwnerEmailChanged = ::this._handleOwnerEmailChanged;
-        this.handleSubtitleChanged = ::this._handleSubtitleChanged;
-        this.handleTitleChanged = ::this._handleTitleChanged;
-        this.handleVendorChanged = ::this._handleVendorChanged;
+        this.onAuthorChanged = ::this._onAuthorChanged;
+        this.onCategoryChanged = ::this._onCategoryChanged;
+        this.onCompleteChanged = ::this._onCompleteChanged;
+        this.onDescriptionChanged = ::this._onDescriptionChanged;
+        this.deleteEpisode = ::this._deleteEpisode;
+        this.onExplicitChanged = ::this._onExplicitChanged;
+        this.onIdChanged = ::this._onIdChanged;
+        this.onImageChanged = ::this._onImageChanged;
+        this.onLanguageChanged = ::this._onLanguageChanged;
+        this.onOwnerNameChanged = ::this._onOwnerNameChanged;
+        this.onOwnerEmailChanged = ::this._onOwnerEmailChanged;
+        this.onSubtitleChanged = ::this._onSubtitleChanged;
+        this.onTitleChanged = ::this._onTitleChanged;
+        this.onVendorChanged = ::this._onVendorChanged;
 
-        this.restoreSavedPodcastChanges = ::this._restoreSavedPodcastChanges;
         this.getNewPodcastValues = ::this._getNewPodcastValues;
+        this.restoreSavedPodcastChanges = ::this._restoreSavedPodcastChanges;
+        this.saveEpisode = ::this._saveEpisode;
+        this.editEpisode = ::this._editEpisode;
     }
 
     state = {
-        authorE:      '',
-        categoryE:    {},
-        completeE:    false,
-        descriptionE: '',
-        episodesE:    [],
-        explicitE:    false,
-        idE:          '',
-        imageE:       '',
-        languageE:    '',
-        mode:         '',
-        ownerE:       {},
-        subtitleE:    '',
-        titleE:       '',
-        vendorE:      ''
+        author:      '',
+        category:    {},
+        complete:    false,
+        description: '',
+        episodes:    [],
+        explicit:    false,
+        id:          '',
+        image:       '',
+        language:    '',
+        mode:        'normal',
+        owner:       {},
+        subtitle:    '',
+        title:       '',
+        vendor:      ''
     };
 
     componentWillMount () {
@@ -135,141 +97,207 @@ export default class Podcast extends Component {
         const { mode } = this.props;
 
         this.setState({
-            authorE:          author,
-            categoryE:        category,
-            completeE:        complete,
-            descriptionE:     description,
-            episodesE:        episodes,
-            explicitE:        explicit,
-            idE:              id,
-            imageE:           image,
-            languageE:        language,
+            author,
+            category,
+            complete,
+            description,
+            episodes: episodes.map((episode) => ({
+                episode,
+                mode: 'normal'
+            })),
+            // episodes,
+            explicit,
+            id,
+            image,
+            language,
             lastSavedPodcast: this.props.podcast,
             mode,
-            ownerE:           owner,
-            subtitleE:        subtitle,
-            titleE:           title,
-            vendorE:          vendor
+            owner,
+            subtitle,
+            title,
+            vendor
         });
     }
+
 
     // on element click handlers
 
-    _handleCancelClicked (e) {
-        this.restoreSavedPodcastChanges();
-        this.setState({ mode: 'open' });
+    _onAddEpisode () {
+        const { episodes } = this.state;
+
+        console.log(episodes);
+        episodes.push(<Episode { ...emptyEpisode } />);
+
+        console.log(episodes);
+        this.setState ({ episodes });
+        console.log(this.state.episodes);
     }
 
-    _handleDeleteEpisodeClicked (delEp) {
-        const episodes = this.state.episodesE;
+    _onCancelClicked () {
+        this.restoreSavedPodcastChanges();
+        this.setState({ mode: 'normal' });
+    }
+
+    _onDeleteEpisodeClicked (delEp) {
+        const { episodes } = this.state;
 
         this.setState({
-            episodesE: episodes.filter((ep) => ep === delEp)
+            episodes: episodes.filter((ep) => ep === delEp)
         });
     }
 
-    _handleEditPodcastClicked () {
+    _onEditPodcastClicked () {
         this.getNewPodcastValues();
         this.setState({ mode: 'edit' });
     }
 
-    _handleImageClicked () {
-        this.chooseImage.click();
-    }
-
-    _handleSavePodcastClicked () {
+    _onSavePodcastClicked () {
         const changedPodcast = this.getNewPodcastValues();
 
         this.setState({
-            mode:             'open',
+            mode:             'normal',
             lastSavedPodcast: changedPodcast
         });
     }
 
-    // on element change handlers
 
-    _handleAuthorChanged (e) {
+    // on element event handlers
+
+    _onAuthorChanged (e) {
         this.setState({
-            authorE: e.target.value
+            author: e.target.value
         });
     }
 
-    _handleCategoryChanged (e) {
-        this.setState({
-            categoryNameE: e.target.value
-        });
-    }
-
-    _handleCompleteChanged (e) {
-        this.setState({
-            completeE: e.target.value
-        });
-    }
-
-    _handleDescriptionChanged (e) {
-        this.setState({
-            descriptionE: e.target.value
-        });
-    }
-
-    _handleExplicitChanged (e) {
-        this.setState({
-            explicitE: e.target.value
-        });
-    }
-
-    _handleIdChanged (e) {
-        this.setState({
-            idE: e.target.value
-        });
-    }
-
-    _handleImageChanged (e) {
-        console.log(e.target.files);
-        this.setState({
-            // imageE: e.target.files[0]
-        });
-    }
-
-    _handleLanguageChanged (e) {
-        console.log('_handleLanguageChanged');
-        this.setState({
-            languageE: e.target.value
-        });
-    }
-
-    _handleOwnerNameChanged (e) {
-        const { owner } = this.state;
+    _onCategoryChanged (e) {
+        const { group } = this.state.category;
 
         this.setState({
-            ownerE: {
-                name:  e.target.value,
-                group: owner.group
+            category: {
+                group,
+                name: e.target.value
             }
         });
     }
 
-    _handleOwnerEmailChanged (e) {
+    _onCompleteChanged (e) {
         this.setState({
-            ownerEmailE: e.target.value
+            complete: e.target.checked
         });
     }
 
-    _handleSubtitleChanged (e) {
+    _onDescriptionChanged (e) {
         this.setState({
-            subtitleE: e.target.value
+            description: e.target.value
         });
     }
 
-    _handleTitleChanged (e) {
+    _onExplicitChanged (e) {
         this.setState({
-            titleE: e.target.value
+            explicit: e.target.checked
         });
     }
 
-    _handleVendorChanged (e) {
+    _onIdChanged (e) {
         this.setState({
-            vendorE: e.target.value
+            id: e.target.value
+        });
+    }
+
+    _onImageChanged (inputEvent) {
+        const reader = new FileReader();
+
+        reader.onload = (readerEvent) => {
+            const image = readerEvent.target.result;
+
+            this.setState({
+                image
+            });
+        };
+        reader.readAsDataURL(inputEvent.target.files[0]);
+    }
+
+    _onLanguageChanged (e) {
+        this.setState({
+            language: e.target.value
+        });
+    }
+
+    _onOwnerNameChanged (e) {
+        const { email } = this.state.owner;
+
+        this.setState({
+            owner: {
+                name: e.target.value,
+                email
+            }
+        });
+    }
+
+    _onOwnerEmailChanged (e) {
+        const { name } = this.state.owner;
+
+        this.setState({
+            owner: {
+                email: e.target.value,
+                name
+            }
+        });
+    }
+
+    _onSubtitleChanged (e) {
+        this.setState({
+            subtitle: e.target.value
+        });
+    }
+
+    _onTitleChanged (e) {
+        this.setState({
+            title: e.target.value
+        });
+    }
+
+    _onVendorChanged (e) {
+        this.setState({
+            vendor: e.target.value
+        });
+    }
+
+
+    // Eposode change handlers
+
+    _deleteEpisode (id) {
+        const { episodes } = this.state;
+
+        this.setState({
+            episodes: episodes.filter((cur) => id !== cur.episode.id)
+            // episodes: episodes.filter((e) => id !== e.id)
+        });
+    }
+
+    _editEpisode (id) {
+        const { episodes } = this.state;
+        const updEpisodes = episodes.map((curE) => curE.episode.id !== id ? curE : {
+            episode: curE.episode,
+            mode:    'edit'
+        });
+
+        this.setState({
+            episodes: updEpisodes
+        });
+    }
+
+    _saveEpisode (oldId, episode) {
+        const { episodes } = this.state;
+
+        console.log('saveEpisode', episodes);
+        const updEpisodes = episodes.map((curE) => curE.episode.id !== oldId ? curE : {
+            episode,
+            mode: 'normal'
+        });
+
+        this.setState({
+            episodes: updEpisodes
         });
     }
 
@@ -291,37 +319,37 @@ export default class Podcast extends Component {
         } = this.state.lastSavedPodcast;
 
         this.setState({
-            authorE:      author,
-            categoryE:    category,
-            completeE:    complete,
-            descriptionE: description,
-            episodesE:    episodes,
-            explicitE:    explicit,
-            idE:          id,
-            imageE:       image,
-            languageE:    language,
-            ownerE:       owner,
-            subtitleE:    subtitle,
-            titleE:       title,
-            vendorE:      vendor
+            author,
+            category,
+            complete,
+            description,
+            episodes,
+            explicit,
+            id,
+            image,
+            language,
+            owner,
+            subtitle,
+            title,
+            vendor
         });
     }
 
     _getNewPodcastValues () {
         const {
-            authorE:      author,
-            categoryE:    category,
-            completeE:    complete,
-            descriptionE: description,
-            episodesE:    episodes,
-            explicitE:    explicit,
-            idE:          id,
-            imageE:       image,
-            languageE:    language,
-            ownerE:       owner,
-            subtitleE:    subtitle,
-            titleE:       title,
-            vendorE:      vendor
+            author,
+            category,
+            complete,
+            description,
+            episodes,
+            explicit,
+            id,
+            image,
+            language,
+            owner,
+            subtitle,
+            title,
+            vendor
         } = this.state;
 
         return {
@@ -342,257 +370,161 @@ export default class Podcast extends Component {
     }
 
     render () {
-        const { onOpenEpisode } = this.props;
         const {
-            authorE,
-            categoryE,
-            completeE,
-            descriptionE,
-            episodesE,
-            explicitE,
-            idE,
-            imageE,
-            languageE,
+            author,
+            category,
+            complete,
+            description,
+            episodes,
+            explicit,
+            id,
+            image,
+            language,
             mode,
-            ownerE,
-            subtitleE,
-            titleE,
-            vendorE
+            owner,
+            subtitle,
+            title,
+            vendor
         } = this.state;
 
-        const episodes = mode === 'create' ? null : episodesE.map((e) => (
-            <li key = { e.id } >
-                { mode === 'open' ? (
-                    <input
-                        className = { Styles.edit }
-                        type = 'button'
-                        onClick = { () => onOpenEpisode('edit', e) }
-                    />
-                ) : (
-                    <input
-                        disabled
-                        className = { Styles.edit }
-                        type = 'button'
-                        onClick = { () => onOpenEpisode('edit', e) }
-                    />
-                )}
-                <span className = { Styles.id } >{ e.id }</span>
-                <span className = { Styles.title } >{ e.title }</span>
-                <span className = { Styles.description } >{ e.description }</span>
-                <span className = { Styles.author } >{ e.author }</span>
-                <span className = { Styles.released } >{ moment(e.date).format('l') }</span>
-                <span className = { Styles.explicit } >{ e.explicit ? 'yes' : 'no' }</span>
-                { mode === 'open' ? (
-                    <input
-                        className = { Styles.delete }
-                        type = 'button'
-                        onClick = { () => this.handleDeleteEpisodeClicked(e) }
-                    />
-                ) : (
-                    <input
-                        disabled
-                        className = { Styles.delete }
-                        type = 'button'
-                        onClick = { () => this.handleDeleteEpisodeClicked(e) }
-                    />
-                )}
-            </li>
-        ));
+        // Buttons
 
-        const addEpisode = completeE ? null : (
+        const btnAddEpisode = complete ? null : (
             <input
-                className = { Styles.add }
+                className = { Styles.btnAddEpisode }
+                key = 'addEpisode'
                 type = 'button'
                 value = 'Add episode'
-                onClick = { () => onOpenEpisode('create', {}) }
+                onClick = { () => this.onAddEpisode }
             />
         );
 
-        const ctgOptions = categories.reduce((pre, cur) => {
-            const curList = cur.list.map((ctg) => (
-                <option
-                    key = { ctg }
-                    label = { ctg }
-                    value = { ctg }
-                    onChange = { this.handleCategoryChanged }
+        const btnEdit = mode === 'normal' ? (
+            <input
+                className = { Styles.btnEditPodcast }
+                type = 'button'
+                value = 'Edit'
+                onClick = { this.onEditPodcastClicked }
+            />
+        ) : null;
+
+        const btnCancel = mode === 'edit' ? (
+            <input
+                className = { Styles.btnCancel }
+                type = 'button'
+                value = 'Cancel'
+                onClick = { this.onCancelClicked }
+            />
+        ) : null;
+
+        const btnSave = mode === 'edit' ? (
+            <input
+                className = { Styles.btnSave }
+                type = 'button'
+                value = 'Save'
+                onClick = { this.onSavePodcastClicked }
+            />
+        ) : null;
+
+        const episodesListElement = episodes.map((curE) => (
+            <li key = { curE.episode.id }>
+                <Episode
+                    author = { curE.episode.author }
+                    date = { curE.episode.date }
+                    deleteMyself = { this.deleteEpisode }
+                    description = { curE.episode.description }
+                    editMyself = { this.editEpisode }
+                    explicit = { curE.episode.explicit }
+                    id = { curE.episode.id }
+                    mode = { curE.mode }
+                    parentMode = { mode }
+                    saveMyself = { this.saveEpisode }
+                    title = { curE.episode.title }
                 />
-            ));
+            </li>
+        ));
 
-            pre.push(
-                <optgroup
-                    label = { cur.group }
-                    title = { cur.group }>
-
-                    { curList }
-                </optgroup>
-            );
-
-            return pre;
-        }, [<option key = '0' />]);
-
-        const langOptions = languages.reduce((newArr, lang) => {
-            newArr.push(
-                <option
-                    key = { lang.id }
-                    value = { lang.id }
-                    onChange = { this.handleLanguageChanged }>
-
-                    { lang.name }
-                </option>
-            );
-
-            return newArr;
-        }, [<option key = '0' />]);
-
-        const podcastComponent = mode === 'open' ? (
+        return (
             <section className = { Styles.podcastComponent }>
-                <input
-                    className = { Styles.editBtn }
-                    type = 'button'
-                    value = 'Edit'
-                    onClick = { this.handleEditPodcastClicked }
-                />
+                { btnCancel }
+                { btnEdit }
+                { btnSave }
                 <div className = { Styles.header } >
-                    <h1 className = { Styles.title }>{ titleE }</h1>
-                    <h2 className = { Styles.author }>{ authorE }</h2>
+                    <Fields.Title
+                        changeValue = { this.onTitleChanged }
+                        mode = { mode }
+                        title = { title }
+                    />
+                    <Fields.Subtitle
+                        changeValue = { this.onSubtitleChanged }
+                        mode = { mode }
+                        subtitle = { subtitle }
+                    />
+                    <Fields.Author
+                        author = { author }
+                        changeValue = { this.onAuthorChanged }
+                        mode = { mode }
+                    />
                 </div>
                 <div className = { Styles.padder } >
                     <div className = { Styles.leftStack }>
-                        <img src = { imageE } />
-                        <ul>
-                            <li className = { Styles.category } >
-                                Category: { categoryE.name }
-                            </li>
-                            <li className = { Styles.language } >
-                                Language: { languageE }
-                            </li>
-                        </ul>
-                        <div className = { Styles.owner }>
-                            <h5>Added by</h5>
-                            <div>{ ownerE.name }</div>
-                            <div>{ ownerE.email }</div>
-                        </div>
-                    </div>
-                    <div className = { Styles.centerStack } >
-                        <h4>Description</h4>
-                        <p>{ descriptionE }</p>
-                        <div className = { Styles.episodesTable } >
-                            <div className = { Styles.headers } >
-                                <span className = { Styles.id } >Id</span>
-                                <span className = { Styles.title } >Title</span>
-                                <span className = { Styles.description } >Description</span>
-                                <span className = { Styles.author } >Author</span>
-                                <span className = { Styles.released } >Released</span>
-                                <span className = { Styles.explicit } >Explicit</span>
-                            </div>
-                            <ul className = { Styles.table } >
-                                { episodes }
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </section>
-        ) : (
-            <section className = { Styles.podcastComponent }>
-                <input
-                    className = { Styles.cancelBtn }
-                    type = 'button'
-                    value = 'Cancel'
-                    onClick = { this.handleCancelClicked }
-                />
-                <input
-                    className = { Styles.saveBtn }
-                    type = 'button'
-                    value = 'Save'
-                    onClick = { this.handleSavePodcastClicked }
-                />
-                <div className = { Styles.header } >
-                    <h1 className = { `${Styles.title} ${Styles.editMode}` }>
-                        <input
-                            // required
-                            type = 'text'
-                            value = { titleE }
-                            onChange = { this.handleTitleChanged }
+                        <Fields.Image
+                            changeValue = { this.onImageChanged }
+                            image = { image }
+                            mode = { mode }
                         />
-                    </h1>
-                    <h2 className = { `${Styles.author} ${Styles.editMode}` }>
-                        <input
-                            required
-                            type = 'text'
-                            value = { authorE }
-                            onChange = { this.handleAuthorChanged }
-                        />
-                    </h2>
-                </div>
-                <div className = { Styles.padder } >
-                    <div className = { Styles.leftStack }>
-                        <img
-                            className = { Styles.editMode }
-                            src = { imageE }
-                            onClick = { this.onImageClicked }
-                        />
-                        <input
-                            name = 'chooseImage'
-                            ref = { (chImg) => this.chooseImage = chImg }
-                            type = 'file'
-                            value = { imageE }
-                            onChange = { this.onImageClicked }
-                        />
-                        <ul>
-                            <li className = { `${Styles.category} ${Styles.editMode}` } >
-                                { 'Category: ' }
-                                <select
-                                    required
-                                    name = 'ctg'
-                                    value = { categoryE.name }
-                                    onChange = { this.handleCategoryChanged }>
-
-                                    { ctgOptions }
-                                </select>
-                            </li>
-                            <li className = { Styles.language } >
-                                { 'Language: ' }
-                                <select
-                                    required
-                                    name = 'lang'
-                                    value = { languageE }
-                                    onChange = { this.handleLanguageChanged }>
-
-                                    { langOptions }
-                                </select>
-                            </li>
-                        </ul>
-                        <div className = { Styles.owner }>
-                            <h5>Added by</h5>
-                            <div className = { Styles.editMode }>
-                                <input
-                                    required
-                                    type = 'text'
-                                    value = { ownerE.name }
-                                    onChange = { this.handleOwnerNameChanged }
-                                />
-                            </div>
-                            <div className = { Styles.editMode }>
-                                <input
-                                    required
-                                    type = 'email'
-                                    value = { ownerE.email }
-                                    onChange = { this.handleOwnerEmailChanged }
-                                />
-                            </div>
-                        </div>
-                    </div>
-                    <div className = { Styles.centerStack } >
-                        <h4>Description</h4>
-                        <p className = { Styles.editMode }>
-                            <textarea
-                                // required
-                                type = 'text'
-                                value = { descriptionE }
-                                onChange = { this.handleDescriptionChanged }
+                        <div>
+                            <Fields.Id
+                                changeValue = { this.onIdChanged }
+                                id = { id }
+                                mode = { mode }
                             />
-                        </p>
-                        <div className = { Styles.episodesTable } >
+                            <Fields.Vendor
+                                changeValue = { this.onVendorChanged }
+                                mode = { mode }
+                                vendor = { vendor }
+                            />
+                            <Fields.Category
+                                category = { category }
+                                changeValue = { this.onCategoryChanged }
+                                mode = { mode }
+                                options = { categories }
+                            />
+                            <Fields.Language
+                                changeValue = { this.onLanguageChanged }
+                                language = { language }
+                                mode = { mode }
+                                options = { languages }
+                            />
+                            <Fields.Explicit
+                                changeValue = { this.onExplicitChanged }
+                                explicit = { explicit }
+                                mode = { mode }
+                            />
+                            <Fields.Complete
+                                changeValue = { this.onCompleteChanged }
+                                complete = { complete }
+                                mode = { mode }
+                            />
+                        </div>
+                        <Fields.Owner
+                            changeEmail = { this.onOwnerEmailChanged }
+                            changeName = { this.onOwnerNameChanged }
+                            mode = { mode }
+                            owner = { owner }
+                        />
+                    </div>
+                    <div className = { Styles.centerStack } >
+                        <Fields.Description
+                            changeValue = { this.onDescriptionChanged }
+                            description = { description }
+                            mode = { mode }
+                        />
+                        <div
+                            className = {
+                                `${Styles.episodesTable}
+                                ${mode === 'edit' ? Styles.editMode : ''}`
+                            }>
                             <div className = { Styles.headers } >
                                 <span className = { Styles.id } >Id</span>
                                 <span className = { Styles.title } >Title</span>
@@ -601,15 +533,14 @@ export default class Podcast extends Component {
                                 <span className = { Styles.released } >Released</span>
                                 <span className = { Styles.explicit } >Explicit</span>
                             </div>
-                            <ul className = { Styles.table } >
-                                { episodes }
+                            <ul className = { Styles.episodesList } >
+                                { episodesListElement }
                             </ul>
+                            { btnAddEpisode }
                         </div>
                     </div>
                 </div>
             </section>
         );
-
-        return podcastComponent;
     }
 }

@@ -1,0 +1,11 @@
+@import '../../../theme/palette';
+
+.author {
+    display: block;
+    margin: 6px 0 0;
+    clear: both;
+    color: $paletteDarkGrey;
+    font-size: 17px;
+    font-weight: bold;
+    line-height: 24px;
+}
