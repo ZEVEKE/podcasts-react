@@ -157,6 +157,14 @@
             //    }
             //}
 
+            .fields {
+                margin: 0;
+                padding: 0;
+                list-style: none outside;
+                font-size: 12px;
+
+            }
+
             //div {
             //    margin: 0;
             //    padding: 0;
@@ -226,7 +234,7 @@
             .episodesTable {
                 position: relative;
                 margin-top: 54px;
-                padding: 20px 26px 32px 16px;
+                padding: 20px 26px 40px 16px;
                 border-bottom: 1px solid darken($paletteLightGrey, 1%);
                 border-radius: 2px;
                 background-color: $paletteLightGrey;

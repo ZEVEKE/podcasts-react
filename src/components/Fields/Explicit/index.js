@@ -27,7 +27,7 @@ const Explicit = (props) => {
 
 Explicit.propTypes = {
     changeValue: PropTypes.func.isRequired,
-    explicit:    PropTypes.string.isRequired,
+    explicit:    PropTypes.bool.isRequired,
     mode:        PropTypes.string.isRequired
 };
 

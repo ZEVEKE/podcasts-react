@@ -27,7 +27,7 @@ const Complete = (props) => {
 
 Complete.propTypes = {
     changeValue: PropTypes.func.isRequired,
-    complete:    PropTypes.string.isRequired,
+    complete:    PropTypes.bool.isRequired,
     mode:        PropTypes.string.isRequired
 };
 

@@ -1,15 +1,23 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 
 import { Transition } from 'react-transition-group';
 import TweenMax from 'gsap';
 
 import Styles from './styles.scss';
-import { data } from '../Mock/index';
+import { categories, emptyEpisode, emptyPodcast, languages, data } from '../Mock';
 
 import PodcastsList from '../PodcastsList';
 import Podcast from '../Podcast';
 
 export default class Main extends Component {
+    static childContextTypes = {
+        categories:   PropTypes.array.isRequired,
+        emptyEpisode: PropTypes.object.isRequired,
+        emptyPodcast: PropTypes.object.isRequired,
+        languages:    PropTypes.array.isRequired
+    };
+
     constructor () {
         super();
 
@@ -32,6 +40,15 @@ export default class Main extends Component {
         page:     `main`,
         podcasts: []
     };
+
+    getChildContext () {
+        return {
+            categories,
+            emptyEpisode,
+            emptyPodcast,
+            languages
+        };
+    }
 
     componentWillMount () {
         this.fetchPodcasts();
@@ -133,7 +150,7 @@ export default class Main extends Component {
                         isNew = { false }
                         mode = { current.mode }
                         podcast = { current.podcast }
-                        onSavePodcast = { this.onSavePodcast }
+                        // onSavePodcast = { this.onSavePodcast }
                     />
                 </div>
             </Transition>

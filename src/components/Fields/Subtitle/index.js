@@ -25,4 +25,4 @@ Subtitle.propTypes = {
     subtitle:    PropTypes.string.isRequired
 };
 
-export default Author;
+export default Subtitle;

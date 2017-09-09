@@ -47,7 +47,7 @@ Owner.propTypes = {
     changeEmail: PropTypes.func.isRequired,
     changeName:  PropTypes.func.isRequired,
     mode:        PropTypes.string.isRequired,
-    owner:       PropTypes.string.isRequired
+    owner:       PropTypes.object.isRequired
 };
 
 export default Owner;

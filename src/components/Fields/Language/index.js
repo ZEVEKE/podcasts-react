@@ -3,9 +3,10 @@ import PropTypes from 'prop-types';
 
 import Styles from './styles.scss';
 
-const Language = (props) => {
-    const { mode, language, options, changeValue } = props;
-    const langOptions = options.reduce((newArr, lang) => {
+const Language = (props, context) => {
+    const { languages } = context;
+    const { mode, language, changeValue } = props;
+    const options = languages.reduce((newArr, lang) => {
         newArr.push(
             <option
                 key = { lang.id }
@@ -17,7 +18,7 @@ const Language = (props) => {
         );
 
         return newArr;
-    }, [<option key = '0' />]);
+    }, [<option key = 'dummy' />]);
 
     return (
         <div className = { Styles.language }>
@@ -26,10 +27,9 @@ const Language = (props) => {
                 mode === 'edit' ? (
                     <select
                         required
-                        // name = 'lang'
                         value = { language }
                         onChange = { changeValue }>
-                        { langOptions }
+                        { options }
                     </select>
                 ) : language
             }
@@ -37,11 +37,14 @@ const Language = (props) => {
     );
 };
 
+Language.contextTypes = {
+    languages: PropTypes.array.isRequired
+};
+
 Language.propTypes = {
     changeValue: PropTypes.func.isRequired,
     language:    PropTypes.string.isRequired,
-    mode:        PropTypes.string.isRequired,
-    options:     PropTypes.array.isRequired
+    mode:        PropTypes.string.isRequired
 };
 
 export default Language;

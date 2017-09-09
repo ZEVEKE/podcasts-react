@@ -2,9 +2,12 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
 import Styles from './styles.scss';
-import { emptyPodcast } from '../Mock/index';
 
 export default class PodcastsList extends Component {
+    static contextTypes = {
+        emptyPodcast: PropTypes.object.isRequired
+    };
+
     static propTypes = {
         podcasts:      PropTypes.array.isRequired,
         onOpenPodcast: PropTypes.func.isRequired
@@ -27,6 +30,7 @@ export default class PodcastsList extends Component {
     }
 
     render () {
+        const { emptyPodcast } = this.context;
         const { podcasts, onOpenPodcast } = this.props;
         const podcastsList = podcasts.map((p) => (
             <li key = { p.id }>

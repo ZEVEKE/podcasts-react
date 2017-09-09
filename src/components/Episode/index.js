@@ -63,19 +63,13 @@ export default class Episode extends Component {
 
         this.setState({
             author,
-            date: moment(date).format('l'),
+            date,
             description,
             explicit,
             id,
             mode,
             title
         });
-    }
-
-    componentWillUnmount () {
-        if (this.updateDate !== null) {
-            clearInterval(this.updateDate);
-        }
     }
 
     // On button click handlers
@@ -94,19 +88,28 @@ export default class Episode extends Component {
     }
 
     _onSaveClicked () {
-        const { saveMyself, id: oldId } = this.props;
-        const { id, title, description, author, date, explicit } = this.state;
-
-        if (!id) {
-            throw new Error(`id should be not empty`);
+        if (this.updateDate !== null) {
+            clearInterval(this.updateDate);
         }
+        const { author, saveMyself, id: oldId } = this.props;
+        const { id, title, description, date, explicit } = this.state;
 
-        if (!title) {
-            throw new Error(`title should be not empty`);
-        }
+        try {
+            if (!id) {
+                throw new Error(`Id should be not empty`);
+            }
 
-        if (!description) {
-            throw new Error(`description should be not empty`);
+            if (!description) {
+                throw new Error(`Description should be not empty`);
+            }
+
+            if (!title) {
+                throw new Error(`Title should be not empty`);
+            }
+        } catch (err) {
+            alert(err.message); // eslint-ignore-line
+
+            return;
         }
 
         saveMyself(
@@ -177,6 +180,7 @@ export default class Episode extends Component {
     render () {
         const { id, title, description, author, explicit, date, mode: ownMode } = this.state;
         const { parentMode } = this.props;
+        console.log(author);
 
         // Buttons
 
@@ -196,7 +200,7 @@ export default class Episode extends Component {
             />
         ) : null;
 
-        const btnSave = parentMode === 'edit' && ownMode === 'edit' ? (
+        const btnSave = ownMode === 'edit' ? (
             <input
                 className = { Styles.save }
                 type = 'button'
@@ -207,13 +211,13 @@ export default class Episode extends Component {
         // Elements
 
         const authorElement = (
-            <span className = { Styles.author }>
+            <span className = { Styles }>
                 { author }
             </span>
         );
 
         const idElement = (
-            <span className = { Styles.id }>
+            <span className = { Styles }>
                 {
                     ownMode === 'edit' ? (
                         <input
@@ -228,8 +232,8 @@ export default class Episode extends Component {
         );
 
         const dateElement = (
-            <span className = { Styles.date }>
-                { date }
+            <span className = { Styles }>
+                { moment(date).format('l') }
             </span>
         );
 
@@ -263,7 +267,7 @@ export default class Episode extends Component {
         );
 
         const titleElement = (
-            <span className = { Styles.title }>
+            <span className = { Styles }>
                 {
                     ownMode === 'edit' ? (
                         <input

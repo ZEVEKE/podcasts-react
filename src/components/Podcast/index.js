@@ -1,13 +1,15 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
-import { categories, emptyEpisode, languages } from '../Mock';
-
 import Episode from '../Episode';
 import * as Fields from '../Fields';
 import Styles from './styles.scss';
 
 export default class Podcast extends Component {
+    static contextTypes = {
+        emptyEpisode: PropTypes.object.isRequired
+    };
+
     static propTypes = {
         mode:    PropTypes.string.isRequired,
         podcast: PropTypes.shape({
@@ -124,13 +126,13 @@ export default class Podcast extends Component {
 
     _onAddEpisode () {
         const { episodes } = this.state;
-
-        console.log(episodes);
-        episodes.push(<Episode { ...emptyEpisode } />);
-
-        console.log(episodes);
-        this.setState ({ episodes });
-        console.log(this.state.episodes);
+        const { emptyEpisode } = this.context;
+        this.setState({
+            episodes: [...episodes, {
+                episode: emptyEpisode,
+                mode:    'edit'
+            }]
+        });
     }
 
     _onCancelClicked () {
@@ -171,7 +173,7 @@ export default class Podcast extends Component {
 
     _onCategoryChanged (e) {
         const { group } = this.state.category;
-
+console.log(e.target);
         this.setState({
             category: {
                 group,
@@ -263,7 +265,6 @@ export default class Podcast extends Component {
         });
     }
 
-
     // Eposode change handlers
 
     _deleteEpisode (id) {
@@ -271,7 +272,6 @@ export default class Podcast extends Component {
 
         this.setState({
             episodes: episodes.filter((cur) => id !== cur.episode.id)
-            // episodes: episodes.filter((e) => id !== e.id)
         });
     }
 
@@ -288,13 +288,27 @@ export default class Podcast extends Component {
     }
 
     _saveEpisode (oldId, episode) {
+        let isNew = true;
         const { episodes } = this.state;
+        const updEpisodes = episodes.map((curE) => {
+            if (curE.episode.id === oldId) {
+                isNew = false;
 
-        console.log('saveEpisode', episodes);
-        const updEpisodes = episodes.map((curE) => curE.episode.id !== oldId ? curE : {
-            episode,
-            mode: 'normal'
+                return {
+                    episode,
+                    mode: 'normal'
+                };
+            }
+
+            return curE;
         });
+
+        if (isNew) {
+            updEpisodes.push({
+                episode,
+                mode: 'edit'
+            });
+        }
 
         this.setState({
             episodes: updEpisodes
@@ -389,13 +403,13 @@ export default class Podcast extends Component {
 
         // Buttons
 
-        const btnAddEpisode = complete ? null : (
+        const btnAddEpisode = complete && mode === 'edit' ? null : (
             <input
                 className = { Styles.btnAddEpisode }
                 key = 'addEpisode'
                 type = 'button'
                 value = 'Add episode'
-                onClick = { () => this.onAddEpisode }
+                onClick = { this.onAddEpisode }
             />
         );
 
@@ -426,10 +440,10 @@ export default class Podcast extends Component {
             />
         ) : null;
 
-        const episodesListElement = episodes.map((curE) => (
+        const episodesList = episodes.map((curE) => (
             <li key = { curE.episode.id }>
                 <Episode
-                    author = { curE.episode.author }
+                    author = { author }
                     date = { curE.episode.date }
                     deleteMyself = { this.deleteEpisode }
                     description = { curE.episode.description }
@@ -466,14 +480,14 @@ export default class Podcast extends Component {
                         mode = { mode }
                     />
                 </div>
-                <div className = { Styles.padder } >
+                <div className = { Styles.padder }>
                     <div className = { Styles.leftStack }>
                         <Fields.Image
                             changeValue = { this.onImageChanged }
                             image = { image }
                             mode = { mode }
                         />
-                        <div>
+                        <div className = { Styles.fields }>
                             <Fields.Id
                                 changeValue = { this.onIdChanged }
                                 id = { id }
@@ -488,13 +502,11 @@ export default class Podcast extends Component {
                                 category = { category }
                                 changeValue = { this.onCategoryChanged }
                                 mode = { mode }
-                                options = { categories }
                             />
                             <Fields.Language
                                 changeValue = { this.onLanguageChanged }
                                 language = { language }
                                 mode = { mode }
-                                options = { languages }
                             />
                             <Fields.Explicit
                                 changeValue = { this.onExplicitChanged }
@@ -525,16 +537,16 @@ export default class Podcast extends Component {
                                 `${Styles.episodesTable}
                                 ${mode === 'edit' ? Styles.editMode : ''}`
                             }>
-                            <div className = { Styles.headers } >
-                                <span className = { Styles.id } >Id</span>
-                                <span className = { Styles.title } >Title</span>
-                                <span className = { Styles.description } >Description</span>
-                                <span className = { Styles.author } >Author</span>
-                                <span className = { Styles.released } >Released</span>
-                                <span className = { Styles.explicit } >Explicit</span>
+                            <div className = { Styles.headers }>
+                                <span>Id</span>
+                                <span>Title</span>
+                                <span>Description</span>
+                                <span>Author</span>
+                                <span>Released</span>
+                                <span>Explicit</span>
                             </div>
                             <ul className = { Styles.episodesList } >
-                                { episodesListElement }
+                                { episodesList }
                             </ul>
                             { btnAddEpisode }
                         </div>

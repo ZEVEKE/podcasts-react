@@ -3,9 +3,10 @@ import PropTypes from 'prop-types';
 
 import Styles from './styles.scss';
 
-const Category = (props) => {
-    const { mode, category, options, changeValue } = props;
-    const ctgOptions = options.reduce((pre, cur) => {
+const Category = (props, context) => {
+    const { categories } = context;
+    const { mode, category, changeValue } = props;
+    const options = categories.reduce((pre, cur) => {
         const curList = cur.list.map((ctg) => (
             <option
                 key = { ctg }
@@ -26,7 +27,7 @@ const Category = (props) => {
         );
 
         return pre;
-    }, [<option key = '0' />]);
+    }, [<option key = 'dummy' />]);
 
     return (
         <div className = { Styles.category }>
@@ -39,7 +40,7 @@ const Category = (props) => {
                         value = { category.name }
                         onChange = { changeValue }>
 
-                        { ctgOptions }
+                        { options }
                     </select>
                 ) : category.name
             }
@@ -47,11 +48,14 @@ const Category = (props) => {
     );
 };
 
+Category.contextTypes = {
+    categories: PropTypes.array.isRequired
+};
+
 Category.propTypes = {
-    category:    PropTypes.string.isRequired,
+    category:    PropTypes.object.isRequired,
     changeValue: PropTypes.func.isRequired,
-    mode:        PropTypes.string.isRequired,
-    options:     PropTypes.array.isRequired
+    mode:        PropTypes.string.isRequired
 };
 
 export default Category;
