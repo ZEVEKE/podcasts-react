@@ -281,7 +281,11 @@ export default class Episode extends Component {
         );
 
         return (
-            <div className = { Styles.episodeComponent }>
+            <div
+                className = {
+                    `${Styles.episodeComponent}
+                     ${ownMode === 'edit' ? Styles.editMode : ''}`
+                }>
                 { btnEdit }
                 { btnSave }
                 { idElement }

@@ -53,6 +53,14 @@ export default class Main extends Component {
     }
 
     _onOpenPodcast (podcast, mode, isNew) {
+        if (
+            typeof podcast !== 'object'
+            || typeof mode !== 'string'
+            || typeof isNew !== 'boolean'
+        ) {
+            throw new Error(`passed arguments should be an object, a string & a boolean value`);
+        }
+
         this.setState({
             current: {
                 isNew,
@@ -94,28 +102,24 @@ export default class Main extends Component {
 
     _handlePodcastsListAppear () {
         const { podcastsList } = this;
-        // console.log('_handlePodcastsListAppear');
 
         TweenMax.fromTo(podcastsList, 0.6, { y: -800 }, { y: 0 });
     }
 
     _handlePodcastsListDisappear () {
         const { podcastsList } = this;
-        // console.log('_handlePodcastsListDisappear');
 
         TweenMax.fromTo(podcastsList, 0.6, { y: 0 }, { y: 800 });
     }
 
     _handlePodcastAppear () {
         const { podcast } = this;
-        // console.log('_handlePodcastAppear');
 
         TweenMax.fromTo(podcast, 0.6, { y: -800 }, { y: 0 });
     }
 
     _handlePodcastDisappear () {
         const { podcast } = this;
-        // console.log('_handlePodcastDisappear');
 
         TweenMax.fromTo(podcast, 0.6, { x: 0 }, { x: -1000 });
     }

@@ -1,6 +1,9 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
+import { Transition } from 'react-transition-group';
+import TweenMax from 'gsap';
+
 import Episode from '../Episode';
 import * as Fields from '../Fields';
 import Styles from './styles.scss';
@@ -63,6 +66,9 @@ export default class Podcast extends Component {
         this.restoreSavedPodcastChanges = ::this._restoreSavedPodcastChanges;
         this.saveEpisode = ::this._saveEpisode;
         this.editEpisode = ::this._editEpisode;
+
+        this.handlePodcastsListAppear = ::this._handlePodcastsListAppear;
+        this.handlePodcastsListDisappear = ::this._handlePodcastsListDisappear;
     }
 
     state = {
@@ -432,6 +438,22 @@ export default class Podcast extends Component {
         }
     }
 
+    // Transitions
+
+    _handlePodcastsListAppear () {
+        const { podcastsList } = this;
+        // console.log('_handlePodcastsListAppear');
+
+        TweenMax.fromTo(podcastsList, 0.6, { heigth: 0 }, { height: '100%' });
+    }
+
+    _handlePodcastsListDisappear () {
+        const { podcastsList } = this;
+        // console.log('_handlePodcastsListDisappear');
+
+        TweenMax.fromTo(podcastsList, 0.6, { heigth: '100%' }, { heigth: 0 });
+    }
+
     render () {
         const {
             author,
@@ -501,19 +523,28 @@ export default class Podcast extends Component {
 
         const episodesList = episodes.map((curE) => (
             <li key = { curE.episode.id }>
-                <Episode
-                    author = { author }
-                    date = { curE.episode.date }
-                    deleteMyself = { this.deleteEpisode }
-                    description = { curE.episode.description }
-                    editMyself = { this.editEpisode }
-                    explicit = { curE.episode.explicit }
-                    id = { curE.episode.id }
-                    mode = { curE.mode }
-                    parentMode = { mode }
-                    saveMyself = { this.saveEpisode }
-                    title = { curE.episode.title }
-                />
+                <Transition
+                    appear
+                    in
+                    timeout = { 600 }
+                    onEnter = { this.handlePodcastAppear }
+                    onExit = { this.handlePodcastDisappear }>
+                    <div ref = { (list) => this.podcastsList = list } >
+                        <Episode
+                            author = { author }
+                            date = { curE.episode.date }
+                            deleteMyself = { this.deleteEpisode }
+                            description = { curE.episode.description }
+                            editMyself = { this.editEpisode }
+                            explicit = { curE.episode.explicit }
+                            id = { curE.episode.id }
+                            mode = { curE.mode }
+                            parentMode = { mode }
+                            saveMyself = { this.saveEpisode }
+                            title = { curE.episode.title }
+                        />
+                    </div>
+                </Transition>
             </li>
         ));
 
