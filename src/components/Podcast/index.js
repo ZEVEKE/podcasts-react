@@ -11,8 +11,10 @@ export default class Podcast extends Component {
     };
 
     static propTypes = {
-        mode:    PropTypes.string.isRequired,
-        podcast: PropTypes.shape({
+        isNew:      PropTypes.bool.isRequired,
+        mode:       PropTypes.string.isRequired,
+        pushMyself: PropTypes.func.isRequired,
+        podcast:    PropTypes.shape({
             author:      PropTypes.string.isRequired,
             category:    PropTypes.object.isRequired,
             complete:    PropTypes.bool.isRequired,
@@ -21,7 +23,7 @@ export default class Podcast extends Component {
             explicit:    PropTypes.bool.isRequired,
             id:          PropTypes.string.isRequired,
             image:       PropTypes.string.isRequired,
-            language:    PropTypes.string.isRequired,
+            language:    PropTypes.object.isRequired,
             owner:       PropTypes.object.isRequired,
             subtitle:    PropTypes.string.isRequired,
             title:       PropTypes.string.isRequired,
@@ -33,11 +35,10 @@ export default class Podcast extends Component {
         super();
 
         // on element click handlers
-        this.onDeleteEpisodeClicked = ::this._onDeleteEpisodeClicked;
-        this.onEditPodcastClicked = ::this._onEditPodcastClicked;
-        this.onSavePodcastClicked = ::this._onSavePodcastClicked;
         this.onCancelClicked = ::this._onCancelClicked;
-        // this.onImageClicked = ::this._onImageClicked;
+        this.onEditPodcastClicked = ::this._onEditPodcastClicked;
+        this.onPushPodcastClicked = ::this._onPushPodcastClicked;
+        this.onSavePodcastClicked = ::this._onSavePodcastClicked;
 
         this.onAddEpisode = ::this._onAddEpisode;
 
@@ -57,6 +58,7 @@ export default class Podcast extends Component {
         this.onTitleChanged = ::this._onTitleChanged;
         this.onVendorChanged = ::this._onVendorChanged;
 
+        this.checkProperty = ::this._checkProperty;
         this.getNewPodcastValues = ::this._getNewPodcastValues;
         this.restoreSavedPodcastChanges = ::this._restoreSavedPodcastChanges;
         this.saveEpisode = ::this._saveEpisode;
@@ -72,7 +74,8 @@ export default class Podcast extends Component {
         explicit:    false,
         id:          '',
         image:       '',
-        language:    '',
+        isNew:       true,
+        language:    {},
         mode:        'normal',
         owner:       {},
         subtitle:    '',
@@ -107,7 +110,6 @@ export default class Podcast extends Component {
                 episode,
                 mode: 'normal'
             })),
-            // episodes,
             explicit,
             id,
             image,
@@ -121,12 +123,17 @@ export default class Podcast extends Component {
         });
     }
 
-
-    // on element click handlers
+    // Element click handlers
 
     _onAddEpisode () {
         const { episodes } = this.state;
         const { emptyEpisode } = this.context;
+        const length = episodes.length;
+
+        if (length && !episodes[episodes.length-1].episode.id) {
+            return;
+        }
+
         this.setState({
             episodes: [...episodes, {
                 episode: emptyEpisode,
@@ -140,30 +147,60 @@ export default class Podcast extends Component {
         this.setState({ mode: 'normal' });
     }
 
-    _onDeleteEpisodeClicked (delEp) {
-        const { episodes } = this.state;
-
-        this.setState({
-            episodes: episodes.filter((ep) => ep === delEp)
-        });
-    }
-
     _onEditPodcastClicked () {
         this.getNewPodcastValues();
         this.setState({ mode: 'edit' });
     }
 
+    _onPushPodcastClicked () {
+        const { pushMyself } = this.props;
+        const { id } = this.props.podcast;
+        const podcast = this.getNewPodcastValues();
+
+        podcast.episodes = podcast.episodes.map((e) => e.episode);
+        pushMyself(id, podcast);
+    }
+
     _onSavePodcastClicked () {
         const changedPodcast = this.getNewPodcastValues();
+        const {
+            author,
+            category,
+            description,
+            id,
+            image,
+            language,
+            owner,
+            subtitle,
+            title,
+            vendor
+        } = changedPodcast;
+
+        try {
+            this.checkProperty(author, 'Author');
+            this.checkProperty(category.name, 'Category');
+            this.checkProperty(description, 'Description');
+            this.checkProperty(id, 'Id');
+            this.checkProperty(image, 'Image');
+            this.checkProperty(language.id, 'Language');
+            this.checkProperty(owner, 'Owner');
+            this.checkProperty(subtitle, 'Subtitle');
+            this.checkProperty(title, 'Title');
+            this.checkProperty(vendor, 'Vendor');
+        } catch (err) {
+            alert(err.message); // eslint-disable-line
+
+            return;
+        }
 
         this.setState({
+            isNew:            false,
             mode:             'normal',
             lastSavedPodcast: changedPodcast
         });
     }
 
-
-    // on element event handlers
+    // Element event handlers
 
     _onAuthorChanged (e) {
         this.setState({
@@ -172,14 +209,12 @@ export default class Podcast extends Component {
     }
 
     _onCategoryChanged (e) {
-        const { group } = this.state.category;
-console.log(e.target);
-        this.setState({
-            category: {
-                group,
-                name: e.target.value
-            }
-        });
+        const category = e.target.value;
+        const res = (/(.*)\|(.*)/g).exec(category);
+        const group = res[1];
+        const name = res[2];
+
+        this.setState({ category: { group, name }});
     }
 
     _onCompleteChanged (e) {
@@ -220,8 +255,16 @@ console.log(e.target);
     }
 
     _onLanguageChanged (e) {
+        const value = e.target.value;
+        const res = (/(.*)\|(.*)/g).exec(value);
+        const id = res[1];
+        const name = res[2];
+
         this.setState({
-            language: e.target.value
+            language: {
+                id,
+                name
+            }
         });
     }
 
@@ -383,6 +426,12 @@ console.log(e.target);
         };
     }
 
+    _checkProperty (property, propertyName) {
+        if (!property) {
+            throw new Error(`${propertyName} shouldn't be empty.`);
+        }
+    }
+
     render () {
         const {
             author,
@@ -393,6 +442,7 @@ console.log(e.target);
             explicit,
             id,
             image,
+            isNew,
             language,
             mode,
             owner,
@@ -403,7 +453,7 @@ console.log(e.target);
 
         // Buttons
 
-        const btnAddEpisode = complete && mode === 'edit' ? null : (
+        const btnAddEpisode = !complete && mode === 'edit' ? (
             <input
                 className = { Styles.btnAddEpisode }
                 key = 'addEpisode'
@@ -411,23 +461,32 @@ console.log(e.target);
                 value = 'Add episode'
                 onClick = { this.onAddEpisode }
             />
-        );
+        ) : null;
 
         const btnEdit = mode === 'normal' ? (
             <input
-                className = { Styles.btnEditPodcast }
+                className = { Styles.btnEdit }
                 type = 'button'
                 value = 'Edit'
                 onClick = { this.onEditPodcastClicked }
             />
         ) : null;
 
-        const btnCancel = mode === 'edit' ? (
+        const btnCancel = mode === 'edit' && !isNew ? (
             <input
                 className = { Styles.btnCancel }
                 type = 'button'
                 value = 'Cancel'
                 onClick = { this.onCancelClicked }
+            />
+        ) : null;
+
+        const btnPush = mode === 'normal' ? (
+            <input
+                className = { Styles.btnPush }
+                type = 'button'
+                value = 'Push'
+                onClick = { this.onPushPodcastClicked }
             />
         ) : null;
 
@@ -462,6 +521,7 @@ console.log(e.target);
             <section className = { Styles.podcastComponent }>
                 { btnCancel }
                 { btnEdit }
+                { btnPush }
                 { btnSave }
                 <div className = { Styles.header } >
                     <Fields.Title

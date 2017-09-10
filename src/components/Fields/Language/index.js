@@ -6,15 +6,14 @@ import Styles from './styles.scss';
 const Language = (props, context) => {
     const { languages } = context;
     const { mode, language, changeValue } = props;
+
     const options = languages.reduce((newArr, lang) => {
         newArr.push(
             <option
                 key = { lang.id }
-                value = { lang.id }
-                onChange = { this.onLanguageChanged }>
-
-                { lang.name }
-            </option>
+                label = { lang.name }
+                value = { `${lang.id}|${lang.name}` }
+            />
         );
 
         return newArr;
@@ -27,11 +26,11 @@ const Language = (props, context) => {
                 mode === 'edit' ? (
                     <select
                         required
-                        value = { language }
+                        label = { language.name }
                         onChange = { changeValue }>
                         { options }
                     </select>
-                ) : language
+                ) : language.name
             }
         </div>
     );
@@ -43,7 +42,7 @@ Language.contextTypes = {
 
 Language.propTypes = {
     changeValue: PropTypes.func.isRequired,
-    language:    PropTypes.string.isRequired,
+    language:    PropTypes.object.isRequired,
     mode:        PropTypes.string.isRequired
 };
 

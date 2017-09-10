@@ -23,14 +23,12 @@ export default class Main extends Component {
 
         this.fetchPodcasts = ::this._fetchPodcasts;
 
-        // this.onSavePodcast = ::this._onSavePodcast;
+        this.onPushPodcast = ::this._onPushPodcast;
         this.onOpenPodcast = ::this._onOpenPodcast;
         this.handlePodcastsListAppear = ::this._handlePodcastsListAppear;
         this.handlePodcastsListDisappear = ::this._handlePodcastsListDisappear;
         this.handlePodcastAppear = ::this._handlePodcastAppear;
         this.handlePodcastDisappear = ::this._handlePodcastDisappear;
-        this.handleEpisodeAppear = ::this._handleEpisodeAppear;
-        this.handleEpisodeDisappear = ::this._handleEpisodeDisappear;
     }
 
     state = {
@@ -65,9 +63,28 @@ export default class Main extends Component {
         });
     }
 
-    // _onSavePodcast (podcast) {
-    //     TODO
-    // }
+    _onPushPodcast (oldId, newPodcast) {
+        const { podcasts } = this.state;
+        let updated = false;
+        const updPodcasts = podcasts.map((podcast) => {
+            if (podcast.id === oldId) {
+                updated = true;
+
+                return newPodcast;
+            }
+
+            return podcast;
+        });
+
+        if (!updated) {
+            updPodcasts.push(newPodcast);
+        }
+
+        this.setState({
+            page:     'main',
+            podcasts: updPodcasts
+        });
+    }
 
     _fetchPodcasts () {
         this.setState({ podcasts: data });
@@ -103,18 +120,6 @@ export default class Main extends Component {
         TweenMax.fromTo(podcast, 0.6, { x: 0 }, { x: -1000 });
     }
 
-    _handleEpisodeAppear () {
-        const { episode } = this;
-
-        TweenMax.fromTo(episode, 0.6, { y: -800 }, { y: 0 });
-    }
-
-    _handleEpisodeDisappear () {
-        const { episode } = this;
-
-        TweenMax.fromTo(episode, 0.6, { x: 0 }, { x: 1000 });
-    }
-
     render () {
         const {
             current,
@@ -147,10 +152,10 @@ export default class Main extends Component {
                 onExit = { this.handlePodcastDisappear }>
                 <div ref = { (p) => this.podcast = p } >
                     <Podcast
-                        isNew = { false }
+                        isNew = { current.isNew }
                         mode = { current.mode }
                         podcast = { current.podcast }
-                        // onSavePodcast = { this.onSavePodcast }
+                        pushMyself = { this.onPushPodcast }
                     />
                 </div>
             </Transition>

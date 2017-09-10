@@ -37,7 +37,7 @@ export default class Episode extends Component {
 
     state = {
         author:      '',
-        date:        '',
+        date:        getCurrentTime(),
         description: '',
         explicit:    false,
         id:          '',
@@ -73,6 +73,7 @@ export default class Episode extends Component {
     }
 
     // On button click handlers
+
     _onDeleteClicked () {
         const { id, deleteMyself } = this.props;
 
@@ -96,18 +97,18 @@ export default class Episode extends Component {
 
         try {
             if (!id) {
-                throw new Error(`Id should be not empty`);
+                throw new Error(`Id shouldn't be empty`);
             }
 
             if (!description) {
-                throw new Error(`Description should be not empty`);
+                throw new Error(`Description shouldn't be empty`);
             }
 
             if (!title) {
-                throw new Error(`Title should be not empty`);
+                throw new Error(`Title shouldn't be empty`);
             }
         } catch (err) {
-            alert(err.message); // eslint-ignore-line
+            alert(err.message); // eslint-disable-line
 
             return;
         }
@@ -148,7 +149,6 @@ export default class Episode extends Component {
         };
     }
 
-
     // on element event handlers
 
     _onIdChanged (event) {
@@ -180,7 +180,6 @@ export default class Episode extends Component {
     render () {
         const { id, title, description, author, explicit, date, mode: ownMode } = this.state;
         const { parentMode } = this.props;
-        console.log(author);
 
         // Buttons
 

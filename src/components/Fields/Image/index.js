@@ -29,6 +29,7 @@ class Image extends Component {
                 <img
                     className = { Styles.image }
                     src = { image }
+
                     onClick = { this.onImageClicked }
                 />
                 <img

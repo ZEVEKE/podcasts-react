@@ -11,16 +11,14 @@ const Category = (props, context) => {
             <option
                 key = { ctg }
                 label = { ctg }
-                value = { ctg }
-                onChange = { this.onCategoryChanged }
+                value = { `${cur.group}|${ctg}` }
             />
         ));
 
         pre.push(
             <optgroup
                 key = { cur.group }
-                label = { cur.group }
-                title = { cur.group }>
+                label = { cur.group }>
 
                 { curList }
             </optgroup>
@@ -36,8 +34,7 @@ const Category = (props, context) => {
                 mode === 'edit' ? (
                     <select
                         required
-                        // name = 'ctg'
-                        value = { category.name }
+                        label = { category.name }
                         onChange = { changeValue }>
 
                         { options }
