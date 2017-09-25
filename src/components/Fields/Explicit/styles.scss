@@ -3,7 +3,7 @@
 .explicit {
     line-height: 1.4em;
 
-    span {
+    .caption {
         display: inline-block;
         min-width: 65px;
         margin-top: .5em;
@@ -11,7 +11,13 @@
         font-weight: bolder;
     }
 
-    div {
+    .input {
+        display: inline-block;
+        width: 40%;
         padding: 0;
+        transition: all .15s ease-out;
+        border: 0;
+        background-color: transparent;
+        color: $paletteGrey;
     }
 }

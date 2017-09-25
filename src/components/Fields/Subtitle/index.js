@@ -1,27 +1,36 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
+import cx from 'class-names';
+
 import Styles from './styles.scss';
 
 const Subtitle = (props) => {
-    const { mode, subtitle, changeValue } = props;
+    const { isEdited, subtitle, changeValue } = props;
+    const inputStyle = cx({
+        [Styles.input]:    true,
+        [Styles.isEdited]: isEdited
+    });
 
-    return mode === 'edit' ? (
-        <h5 className = { `${Styles.subtitle} ${Styles.editMode}` }>
+    return (
+        <h5 className = { Styles.subtitle }>
             <input
                 required
+                className = { inputStyle }
+                disabled = { !isEdited }
+                name = 'subtitle'
                 placeholder = 'Subtitle'
                 type = 'text'
                 value = { subtitle }
                 onChange = { changeValue }
             />
         </h5>
-    ) : <h5 className = { Styles.subtitle }>{ subtitle }</h5>;
+    );
 };
 
 Subtitle.propTypes = {
     changeValue: PropTypes.func.isRequired,
-    mode:        PropTypes.string.isRequired,
+    isEdited:    PropTypes.bool.isRequired,
     subtitle:    PropTypes.string.isRequired
 };
 

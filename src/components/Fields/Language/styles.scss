@@ -1,17 +1,54 @@
 @import '../../../theme/palette';
 
 .language {
-    line-height: 1.4em;
+    width: 170px;
+    margin-top: .5em;
+    transition: all .15s ease-out;
 
     span {
-        display: inline-block;
-        min-width: 65px;
-        margin-top: .5em;
-        font-size: 10px;
-        font-weight: bolder;
+        line-height: 1.5em;
+
+        &.caption {
+            display: inline-block;
+            min-width: 65px;
+            font-size: 10px;
+            font-weight: bolder;
+        }
     }
 
-    div {
-        padding: 0;
+    .styledSelect {
+        position: relative;
+        overflow: hidden;
+        box-shadow: $paletteLightShadow;
+        line-height: 1.5em;
+
+        &::after {
+            content: '';
+            display: block;
+            position: absolute;
+            top: 7px;
+            right: 5px;
+            width: 0;
+            height: 0;
+            border-top: 5px solid $paletteBlack;
+            border-right: 3px solid transparent;
+            border-left: 3px solid transparent;
+        }
+
+        select {
+            width: 188px;
+            padding: 2px 6px;
+            border: 0;
+            outline: 1px;
+            background-color: $paletteWhite;
+            color: $paletteGrey;
+            appearance: none;
+            -moz-appearance: none;
+            -webkit-appearance: none;
+
+            &::placeholder {
+                color: darken($paletteLightGrey, 10%);
+            }
+        }
     }
 }

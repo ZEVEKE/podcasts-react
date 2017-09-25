@@ -6,14 +6,31 @@
         color: $paletteDarkGrey;
     }
 
-    p {
+    .textarea {
+        width: 609px;
+        max-width: 609px;
+        height: 4em;
+        max-height: 10em;
         margin: 0;
+        padding: .5em;
+        transition: all .15s ease-out, height .05s;
+        border: 0;
+        outline: 0;
+        background-color: transparent;
+        color: $paletteGrey;
         font-size: 12px;
+        resize: none;
 
-        & textarea {
-            max-width: 56.4em;
-            height: 4em;
-            padding: .5em;
+        &::placeholder {
+            color: darken($paletteLightGrey, 10%);
+            font-size: .9em;
+            font-weight: normal;
+        }
+
+        &.isEdited {
+            padding-left: 6px;
+            background-color: $paletteWhite;
+            box-shadow: $paletteLightShadow;
         }
     }
 }

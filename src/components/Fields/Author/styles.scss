@@ -2,10 +2,33 @@
 
 .author {
     display: block;
-    margin: 6px 0 0;
-    clear: both;
-    color: $paletteDarkGrey;
+    margin: 12px 0 0;
     font-size: 17px;
     font-weight: bold;
-    line-height: 24px;
+
+    .input {
+        width: 100%;
+        padding: 0;
+        transition: all .15s ease-out;
+        border: 0;
+        outline: 0;
+        background-color: transparent;
+        color: $paletteDarkGrey;
+        font-weight: bolder;
+        line-height: 24px;
+
+        &::placeholder {
+            color: darken($paletteLightGrey, 10%);
+            font-size: .9em;
+            font-weight: normal;
+        }
+
+        &.isEdited {
+            padding-left: 6px;
+            background-color: $paletteWhite;
+            box-shadow: $paletteLightShadow;
+            color: $paletteGrey;
+            font-weight: normal;
+        }
+    }
 }

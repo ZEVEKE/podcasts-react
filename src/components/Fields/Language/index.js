@@ -5,33 +5,34 @@ import Styles from './styles.scss';
 
 const Language = (props, context) => {
     const { languages } = context;
-    const { mode, language, changeValue } = props;
-
-    const options = languages.reduce((newArr, lang) => {
-        newArr.push(
+    const { isEdited, language, changeValue } = props;
+    const options = languages.reduce((result, lang) => {
+        result.push(
             <option
                 key = { lang.id }
                 label = { lang.name }
-                value = { `${lang.id}|${lang.name}` }
+                value = { lang.id }
             />
         );
 
-        return newArr;
-    }, [<option key = 'dummy' />]);
+        return result;
+    }, [<option key = 'dummy' label = '-- Select category --' />]);
 
-    return (
+    return isEdited ? (
         <div className = { Styles.language }>
-            <span>Language: </span>
-            {
-                mode === 'edit' ? (
-                    <select
-                        required
-                        label = { language.name }
-                        onChange = { changeValue }>
-                        { options }
-                    </select>
-                ) : language.name
-            }
+            <div className = { Styles.styledSelect }>
+                <select
+                    name = 'language'
+                    value = { language.id }
+                    onChange = { changeValue }>
+                    { options }
+                </select>
+            </div>
+        </div>
+    ) : (
+        <div className = { Styles.language }>
+            <span className = { Styles.caption }>Language: </span>
+            <span>{ language.name } </span>
         </div>
     );
 };
@@ -42,8 +43,8 @@ Language.contextTypes = {
 
 Language.propTypes = {
     changeValue: PropTypes.func.isRequired,
-    language:    PropTypes.object.isRequired,
-    mode:        PropTypes.string.isRequired
+    isEdited:    PropTypes.bool.isRequired,
+    language:    PropTypes.object.isRequired
 };
 
 export default Language;

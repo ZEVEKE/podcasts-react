@@ -1,52 +1,56 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
+import cx from 'class-names';
+
 import Styles from './styles.scss';
 
 const Owner = (props) => {
-    const { mode, owner, changeName, changeEmail } = props;
+    const { isEdited, owner, changeValue } = props;
+    const inputStyle = cx({
+        [Styles.input]:    true,
+        [Styles.isEdited]: isEdited
+    });
+
+    const componentStyle = cx({
+        [Styles.owner]:    true,
+        [Styles.isEdited]: isEdited
+    });
 
     return (
-        <div
-            className = {
-                `${Styles.owner}
-                    ${mode === 'edit' ? Styles.editMode : ''}`
-            }>
+        <div className = { componentStyle }>
             <h5>Added by</h5>
             <div>
-                {
-                    mode === 'edit' ? (
-                        <input
-                            required
-                            placeholder = 'Name'
-                            type = 'text'
-                            value = { owner.name }
-                            onChange = { changeName }
-                        />
-                    ) : owner.name
-                }
+                <input
+                    required
+                    className = { inputStyle }
+                    disabled = { !isEdited }
+                    name = 'ownerName'
+                    placeholder = 'Name'
+                    type = 'text'
+                    value = { owner.name }
+                    onChange = { changeValue }
+                />
             </div>
             <div>
-                {
-                    mode === 'edit' ? (
-                        <input
-                            required
-                            placeholder = 'E-Mail'
-                            type = 'email'
-                            value = { owner.email }
-                            onChange = { changeEmail }
-                        />
-                    ) : owner.email
-                }
+                <input
+                    required
+                    className = { inputStyle }
+                    disabled = { !isEdited }
+                    name = 'ownerEmail'
+                    placeholder = 'E-Mail'
+                    type = 'email'
+                    value = { owner.email }
+                    onChange = { changeValue }
+                />
             </div>
         </div>
     );
 };
 
 Owner.propTypes = {
-    changeEmail: PropTypes.func.isRequired,
-    changeName:  PropTypes.func.isRequired,
-    mode:        PropTypes.string.isRequired,
+    changeValue: PropTypes.func.isRequired,
+    isEdited:    PropTypes.bool.isRequired,
     owner:       PropTypes.object.isRequired
 };
 
