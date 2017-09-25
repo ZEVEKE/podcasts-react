@@ -4,53 +4,26 @@
     display: block;
     position: relative;
     margin: 0 auto;
-    padding: 50px 60px;
+    padding: 50px 74px;
     background-color: $palettePad;
-    font-family: Arial, Verdana, sans-serif;//'Lucida Sans',Helvetica
+    font-family: Arial, Verdana, sans-serif;
 
-    [type='text'], [type='email'] {
-        width: 100%;
-        padding: .08em .3em;
-        border: 0;
-        outline: 0;
-        box-shadow: $paletteLightShadow;
-        color: $paletteGrey;
-        font-size: .9em;
-
-        &::placeholder {
-            color: darken($paletteLightGrey, 10%);
-            font-size: .9em;
-            font-weight: normal;
-        }
-    }
-
-    select {
-        border: 0;
-        outline: 0;
-        background-color: $paletteWhite;
-        box-shadow: $paletteLightShadow;
-        color: $paletteGrey;
-
-        &::placeholder {
-            color: darken($paletteLightGrey, 10%);
-        }
-    }
-
-    .btnEdit, .btnSave, .btnCancel, .btnPush {
+    .btnEdit, .btnSave, .btnCancel, .btnReturn {
         position: absolute;
         width: 80px;
         height: 28px;
-        border-radius: 2px;
+        padding: 0;
+        border-radius: 4px;
         outline: 0;
         color: $paletteWhite;
-        font-size: 12px;
+        font-size: 13px;
         letter-spacing: 1px;
-        line-height: 15px;
+        line-height: 28px;
         cursor: pointer;
 
         &.btnEdit, &.btnSave {
-            top: 30px;
-            right: 30px;
+            top: 50px;
+            right: 75px;
             border: 1px solid $paletteBlue;
             background-color: $paletteBlue;
 
@@ -61,36 +34,22 @@
             }
         }
 
-        &.btnCancel {
-            top: 30px;
-            right: 130px;
-            border: 1px solid $paletteGrey;
-            background-color: $paletteGrey;
+        &.btnCancel, &.btnReturn {
+            top: 85px;
+            right: 75px;
+            border: 0;
+            background-color: transparent;
+            color: $paletteGrey;
 
-            &:hover {
-                transition: all .15s ease-in;
-                border: 1px solid darken($paletteGrey, 8%);
-                background-color: darken($paletteGrey, 8%);
-            }
-        }
-
-        &.btnPush {
-            top: 30px;
-            right: 130px;
-            border: 1px solid $paletteGreen;
-            background-color: $paletteGreen;
-
-            &:hover {
-                transition: all .15s ease-in;
-                border: 1px solid darken($paletteGreen, 8%);
-                background-color: darken($paletteGreen, 8%);
+            &:active {
+                background-color: darken($paletteLightGrey, 2%);
             }
         }
     }
 
     .header {
-        width: 600px;
-        margin: 0 0 2.2em;
+        width: 500px;
+        margin: 0 0 1.6em;
     }
 
     .padder {
@@ -117,28 +76,10 @@
             margin-left: 30px;
             color: $paletteGrey;
 
-            .description {
-                h4 {
-                    margin-bottom: 12px;
-                    color: $paletteDarkGrey;
-                }
-
-                p {
-                    margin: 0;
-                    font-size: 12px;
-
-                    & textarea {
-                        max-width: 56.4em;
-                        height: 4em;
-                        padding: .5em;
-                    }
-                }
-            }
-
-            .episodesTable {
+            .table {
                 position: relative;
-                margin-top: 47px;
-                padding: 20px 26px 40px 16px;
+                margin-top: 6px;
+                padding: 20px 26px 36px 16px;
                 border-bottom: 1px solid darken($paletteLightGrey, 1%);
                 border-radius: 2px;
                 background-color: $paletteLightGrey;
@@ -146,8 +87,8 @@
                 .headers {
                     display: grid;
                     height: 22px;
-                    padding-left: 24px;
-                    grid-template-columns: 5% 18% 29% 19% 14% 9%;
+                    padding-left: 26px;
+                    grid-template-columns: 20% 30% 20% 15% 9%;
                     grid-column-gap: 1.5%;
 
                     span {
@@ -157,7 +98,7 @@
                     }
                 }
 
-                .episodesList {
+                .rows {
                     margin: 0;
                     padding: 0;
                     list-style: none;
@@ -166,24 +107,44 @@
                 .btnAddEpisode {
                     display: inline-block;
                     position: absolute;
-                    bottom: 16px;
-                    left: 40px;
-                    padding: 0;
+                    bottom: 12px;
+                    left: 22px;
+                    padding: 0 0 0 16px;
                     transition: all .15s ease;
                     border: 0;
-                    border-radius: 1px;
                     outline: 0;
-                    background-color: transparent;
+                    opacity: .65;
+                    background: transparent url('../../theme/assets/plus.svg') no-repeat 0 2px;
+                    background-size: 7px;
                     color: $paletteBlue;
-                    font-size: 10px;
-                    text-decoration: underline;
+                    font-size: 12px;
                     cursor: pointer;
-                }
 
-                &.editMode {
-                    margin-top: 10px;
+                    &:hover {
+                        opacity: .9;
+                    }
                 }
             }
         }
     }
+
+    .episodeEnter {
+        opacity: .01;
+    }
+
+    .episodeEnterActive {
+        transition: all .5s ease-in;
+        opacity: 1;
+    }
+
+    .episodeExit {
+        opacity: 1;
+    }
+
+    .episodeExitActive {
+        transition: all .5s ease-in;
+        opacity: .01;
+
+    }
+
 }

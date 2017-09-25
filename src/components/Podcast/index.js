@@ -1,37 +1,61 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
-import { Transition } from 'react-transition-group';
-import TweenMax from 'gsap';
+import { getUniqueID, getCurrentTime } from '../../helpers';
 
 import Episode from '../Episode';
 import * as Fields from '../Fields';
+
 import Styles from './styles.scss';
 
 export default class Podcast extends Component {
     static contextTypes = {
-        emptyEpisode: PropTypes.object.isRequired
+        categories: PropTypes.array.isRequired,
+        languages:  PropTypes.array.isRequired
     };
 
     static propTypes = {
-        isNew:      PropTypes.bool.isRequired,
-        mode:       PropTypes.string.isRequired,
-        pushMyself: PropTypes.func.isRequired,
-        podcast:    PropTypes.shape({
-            author:      PropTypes.string.isRequired,
-            category:    PropTypes.object.isRequired,
-            complete:    PropTypes.bool.isRequired,
-            description: PropTypes.string.isRequired,
-            episodes:    PropTypes.array.isRequired,
-            explicit:    PropTypes.bool.isRequired,
-            id:          PropTypes.string.isRequired,
-            image:       PropTypes.string.isRequired,
-            language:    PropTypes.object.isRequired,
-            owner:       PropTypes.object.isRequired,
-            subtitle:    PropTypes.string.isRequired,
-            title:       PropTypes.string.isRequired,
-            vendor:      PropTypes.string.isRequired
+        cancelMyself: PropTypes.func.isRequired,
+        editMyself:   PropTypes.func.isRequired,
+        returnToMain: PropTypes.func.isRequired,
+        saveMyself:   PropTypes.func.isRequired,
+        isEdited:     PropTypes.bool,
+        isNew:        PropTypes.bool,
+        podcast:      PropTypes.shape({
+            author:      PropTypes.string,
+            category:    PropTypes.object,
+            complete:    PropTypes.bool,
+            description: PropTypes.string,
+            episodes:    PropTypes.array,
+            explicit:    PropTypes.bool,
+            id:          PropTypes.string,
+            image:       PropTypes.string,
+            language:    PropTypes.object,
+            owner:       PropTypes.object,
+            subtitle:    PropTypes.string,
+            title:       PropTypes.string,
+            vendor:      PropTypes.string
         })
+    };
+
+    static defaultProps = {
+        podcast: {
+            author:      '',
+            category:    {},
+            complete:    false,
+            description: '',
+            episodes:    [],
+            explicit:    false,
+            id:          '',
+            image:       '',
+            isEdited:    false,
+            isNew:       false,
+            language:    {},
+            owner:       {},
+            subtitle:    '',
+            title:       '',
+            vendor:      ''
+        }
     };
 
     constructor () {
@@ -40,35 +64,19 @@ export default class Podcast extends Component {
         // on element click handlers
         this.onCancelClicked = ::this._onCancelClicked;
         this.onEditPodcastClicked = ::this._onEditPodcastClicked;
-        this.onPushPodcastClicked = ::this._onPushPodcastClicked;
+        this.onReturnClicked = ::this._onReturnClicked;
         this.onSavePodcastClicked = ::this._onSavePodcastClicked;
 
         this.onAddEpisode = ::this._onAddEpisode;
 
         // on element change handlers
-        this.onAuthorChanged = ::this._onAuthorChanged;
-        this.onCategoryChanged = ::this._onCategoryChanged;
-        this.onCompleteChanged = ::this._onCompleteChanged;
-        this.onDescriptionChanged = ::this._onDescriptionChanged;
         this.deleteEpisode = ::this._deleteEpisode;
-        this.onExplicitChanged = ::this._onExplicitChanged;
-        this.onIdChanged = ::this._onIdChanged;
-        this.onImageChanged = ::this._onImageChanged;
-        this.onLanguageChanged = ::this._onLanguageChanged;
-        this.onOwnerNameChanged = ::this._onOwnerNameChanged;
-        this.onOwnerEmailChanged = ::this._onOwnerEmailChanged;
-        this.onSubtitleChanged = ::this._onSubtitleChanged;
-        this.onTitleChanged = ::this._onTitleChanged;
-        this.onVendorChanged = ::this._onVendorChanged;
+        this.episodeChanged = ::this._episodeChanged;
+        this.onFieldChanged = ::this._onFieldChanged;
 
-        this.checkProperty = ::this._checkProperty;
-        this.getNewPodcastValues = ::this._getNewPodcastValues;
-        this.restoreSavedPodcastChanges = ::this._restoreSavedPodcastChanges;
+        this.checkField = ::this._checkField;
         this.saveEpisode = ::this._saveEpisode;
         this.editEpisode = ::this._editEpisode;
-
-        this.handlePodcastsListAppear = ::this._handlePodcastsListAppear;
-        this.handlePodcastsListDisappear = ::this._handlePodcastsListDisappear;
     }
 
     state = {
@@ -78,18 +86,54 @@ export default class Podcast extends Component {
         description: '',
         episodes:    [],
         explicit:    false,
-        id:          '',
         image:       '',
-        isNew:       true,
         language:    {},
-        mode:        'normal',
-        owner:       {},
+        ownerEmail:  '',
+        ownerName:   '',
         subtitle:    '',
         title:       '',
         vendor:      ''
     };
 
     componentWillMount () {
+        if (!this.props.isNew) {
+            const {
+                author,
+                category,
+                complete,
+                description,
+                episodes,
+                explicit,
+                image,
+                language,
+                owner,
+                subtitle,
+                title,
+                vendor
+            } = this.props.podcast;
+
+            this.setState({
+                author,
+                category:   { ...category },
+                complete,
+                description,
+                explicit,
+                image,
+                language:   { ...language },
+                subtitle,
+                title,
+                vendor,
+                ownerName:  owner.name,
+                ownerEmail: owner.email,
+                episodes:   episodes.map((episode) => ({
+                    episode,
+                    isEdited: false
+                }))
+            });
+        }
+    }
+
+    componentWillReceiveProps (nextProps) {
         const {
             author,
             category,
@@ -97,364 +141,302 @@ export default class Podcast extends Component {
             description,
             episodes,
             explicit,
-            id,
             image,
             language,
             owner,
             subtitle,
             title,
             vendor
-        } = this.props.podcast;
-        const { mode } = this.props;
+        } = nextProps.podcast;
 
         this.setState({
             author,
-            category,
+            category:   { ...category },
             complete,
             description,
-            episodes: episodes.map((episode) => ({
-                episode,
-                mode: 'normal'
-            })),
             explicit,
-            id,
             image,
-            language,
-            lastSavedPodcast: this.props.podcast,
-            mode,
-            owner,
+            language:   { ...language },
             subtitle,
             title,
-            vendor
+            vendor,
+            ownerName:  owner.name,
+            ownerEmail: owner.email,
+            episodes:   episodes.map((episode) => ({
+                episode,
+                isEdited: false
+            }))
         });
     }
 
     // Element click handlers
 
     _onAddEpisode () {
-        const { episodes } = this.state;
-        const { emptyEpisode } = this.context;
-        const length = episodes.length;
+        this.setState((prevState) => {
+            const { author, episodes } = prevState;
 
-        if (length && !episodes[episodes.length-1].episode.id) {
-            return;
-        }
-
-        this.setState({
-            episodes: [...episodes, {
-                episode: emptyEpisode,
-                mode:    'edit'
-            }]
+            return {
+                episodes: [
+                    ...episodes,
+                    {
+                        episode: {
+                            author,
+                            date: getCurrentTime(),
+                            id:   getUniqueID(15)
+                        },
+                        isEdited: true
+                    }
+                ]
+            };
         });
     }
 
     _onCancelClicked () {
-        this.restoreSavedPodcastChanges();
-        this.setState({ mode: 'normal' });
+        this.props.cancelMyself();
     }
 
     _onEditPodcastClicked () {
-        this.getNewPodcastValues();
-        this.setState({ mode: 'edit' });
+        this.props.editMyself();
     }
 
-    _onPushPodcastClicked () {
-        const { pushMyself } = this.props;
-        const { id } = this.props.podcast;
-        const podcast = this.getNewPodcastValues();
+    _onReturnClicked () {
+        const { returnToMain } = this.props;
 
-        podcast.episodes = podcast.episodes.map((e) => e.episode);
-        pushMyself(id, podcast);
+        returnToMain();
     }
 
     _onSavePodcastClicked () {
-        const changedPodcast = this.getNewPodcastValues();
+        const { podcast: p, isNew, saveMyself } = this.props;
+        let id = p.id;
+
+        if (isNew && !id) {
+            id = getUniqueID(15);
+        }
+
         const {
             author,
             category,
+            complete,
             description,
-            id,
+            episodes,
+            explicit,
             image,
             language,
-            owner,
+            ownerEmail,
+            ownerName,
             subtitle,
             title,
             vendor
-        } = changedPodcast;
+        } = this.state;
+
+        for (const item of episodes) {
+            if (item.isEdited) {
+                if (!this.saveEpisode(item.episode.id)) {
+                    return;
+                }
+            }
+        }
 
         try {
-            this.checkProperty(author, 'Author');
-            this.checkProperty(category.name, 'Category');
-            this.checkProperty(description, 'Description');
-            this.checkProperty(id, 'Id');
-            this.checkProperty(image, 'Image');
-            this.checkProperty(language.id, 'Language');
-            this.checkProperty(owner, 'Owner');
-            this.checkProperty(subtitle, 'Subtitle');
-            this.checkProperty(title, 'Title');
-            this.checkProperty(vendor, 'Vendor');
+            this.checkField(author, 'Author');
+            this.checkField(category.name, 'Category');
+            this.checkField(description, 'Description');
+            this.checkField(image, 'Image');
+            this.checkField(language.id, 'Language');
+            this.checkField(ownerEmail, 'Owner e-mail');
+            this.checkField(ownerName, 'Owner name');
+            this.checkField(subtitle, 'Subtitle');
+            this.checkField(title, 'Title');
+            this.checkField(vendor, 'Vendor');
         } catch (err) {
             alert(err.message); // eslint-disable-line
 
             return;
         }
 
-        this.setState({
-            isNew:            false,
-            mode:             'normal',
-            lastSavedPodcast: changedPodcast
-        });
+        const podcast = {
+            author,
+            category,
+            complete,
+            description,
+            episodes: episodes.map((item) => item.episode),
+            explicit,
+            id,
+            image,
+            language,
+            owner:    {
+                email: ownerEmail,
+                name:  ownerName
+            },
+            subtitle,
+            title,
+            vendor
+        };
+
+        saveMyself({ ...podcast, id });
+    }
+
+    _checkField (property, propertyName) {
+        if (!property) {
+            throw new Error(`${propertyName} of podcast shouldn't be empty.`);
+        }
     }
 
     // Element event handlers
 
-    _onAuthorChanged (e) {
-        this.setState({
-            author: e.target.value
-        });
-    }
+    async _onFieldChanged (e) {
+        const target = e.target;
+        const targetName = target.name;
+        const nextState = {};
 
-    _onCategoryChanged (e) {
-        const category = e.target.value;
-        const res = (/(.*)\|(.*)/g).exec(category);
-        const group = res[1];
-        const name = res[2];
+        let reader = null;
+        let value = null;
 
-        this.setState({ category: { group, name }});
-    }
+        switch (target.type) {
+            case 'checkbox':
+                value = target.checked;
+                break;
 
-    _onCompleteChanged (e) {
-        this.setState({
-            complete: e.target.checked
-        });
-    }
+            case 'file':
+                reader = new FileReader();
 
-    _onDescriptionChanged (e) {
-        this.setState({
-            description: e.target.value
-        });
-    }
+                value = await new Promise((resolve) => {
+                    reader.onload = (readerEvent) => {
+                        resolve(readerEvent.target.result);
+                    };
+                    if (target.files[0]) {
+                        reader.readAsDataURL(target.files[0]);
+                    }
+                });
+                break;
 
-    _onExplicitChanged (e) {
-        this.setState({
-            explicit: e.target.checked
-        });
-    }
+            default:
+                value = target.value;
+                break;
+        }
 
-    _onIdChanged (e) {
-        this.setState({
-            id: e.target.value
-        });
-    }
+        switch (targetName) {
+            case 'category':
+                nextState.category = {};
+                nextState.category.name = value === '-- Select category --' ? '' : value;
+                nextState.category.group = this.context.categories.find((category) => category.list.indexOf(name) >= 0);
 
-    _onImageChanged (inputEvent) {
-        const reader = new FileReader();
+                break;
 
-        reader.onload = (readerEvent) => {
-            const image = readerEvent.target.result;
+            case 'language':
+                nextState.language = {};
+                nextState.language.name = this.context.languages.find((lang) => lang.id === value) ?
+                    this.context.languages.find((lang) => lang.id === value).name : '';
+                nextState.language.id = value;
+                break;
 
-            this.setState({
-                image
-            });
-        };
-        reader.readAsDataURL(inputEvent.target.files[0]);
-    }
+            default:
+                nextState[targetName] = value;
+                break;
+        }
 
-    _onLanguageChanged (e) {
-        const value = e.target.value;
-        const res = (/(.*)\|(.*)/g).exec(value);
-        const id = res[1];
-        const name = res[2];
-
-        this.setState({
-            language: {
-                id,
-                name
+        this.setState((prevState) => {
+            if (targetName === 'author') {
+                nextState.episodes = prevState.episodes.map((item) => ({
+                    episode: {
+                        ...item.episode,
+                        author: value
+                    },
+                    isEdited:       item.isEdited,
+                    isParentEdited: item.isParentEdited
+                }));
             }
-        });
-    }
 
-    _onOwnerNameChanged (e) {
-        const { email } = this.state.owner;
-
-        this.setState({
-            owner: {
-                name: e.target.value,
-                email
-            }
-        });
-    }
-
-    _onOwnerEmailChanged (e) {
-        const { name } = this.state.owner;
-
-        this.setState({
-            owner: {
-                email: e.target.value,
-                name
-            }
-        });
-    }
-
-    _onSubtitleChanged (e) {
-        this.setState({
-            subtitle: e.target.value
-        });
-    }
-
-    _onTitleChanged (e) {
-        this.setState({
-            title: e.target.value
-        });
-    }
-
-    _onVendorChanged (e) {
-        this.setState({
-            vendor: e.target.value
+            return nextState;
         });
     }
 
     // Eposode change handlers
 
+    _episodeChanged (id, field, e /* optional */) {
+        let value = null;
+
+        if (field === 'explicit') {
+            value = e.target.checked;
+        } else {
+            value = e.target.value;
+        }
+
+        this.setState((prevState) => ({
+            episodes: prevState.episodes.map((item) => item.episode.id === id ?
+                {
+                    episode: {
+                        ...item.episode,
+                        [field]: field === 'date' ? getCurrentTime() : value
+                    },
+                    isEdited: item.isEdited
+                } : item
+            )
+        }));
+    }
+
     _deleteEpisode (id) {
         const { episodes } = this.state;
 
         this.setState({
-            episodes: episodes.filter((cur) => id !== cur.episode.id)
+            episodes: episodes.filter((item) => id !== item.episode.id)
         });
     }
 
     _editEpisode (id) {
         const { episodes } = this.state;
-        const updEpisodes = episodes.map((curE) => curE.episode.id !== id ? curE : {
-            episode: curE.episode,
-            mode:    'edit'
+        const updatedEpisodes = episodes.map((item) => item.episode.id !== id ? item : {
+            episode:  item.episode,
+            isEdited: true
         });
 
         this.setState({
-            episodes: updEpisodes
+            episodes: updatedEpisodes
         });
     }
 
-    _saveEpisode (oldId, episode) {
-        let isNew = true;
+    _saveEpisode (id) {
         const { episodes } = this.state;
-        const updEpisodes = episodes.map((curE) => {
-            if (curE.episode.id === oldId) {
-                isNew = false;
+        let updatedEpisodes = [];
 
-                return {
-                    episode,
-                    mode: 'normal'
-                };
-            }
+        if (!episodes.length) {
+            return true;
+        }
 
-            return curE;
-        });
+        try {
+            updatedEpisodes = episodes.map((item) => {
+                if (item.episode.id === id) {
+                    if (!item.episode.description) {
+                        throw new Error(`Description of episode shouldn't be empty`);
+                    }
 
-        if (isNew) {
-            updEpisodes.push({
-                episode,
-                mode: 'edit'
+                    if (!item.episode.title) {
+                        throw new Error(`Title of episode shouldn't be empty`);
+                    }
+
+                    return {
+                        episode:  item.episode,
+                        isEdited: false
+                    };
+                }
+
+                return item;
             });
+        } catch (err) {
+            alert(err.message); // eslint-disable-line
+
+            return false;
         }
 
         this.setState({
-            episodes: updEpisodes
+            episodes: updatedEpisodes
         });
-    }
 
-    _restoreSavedPodcastChanges () {
-        const {
-            author,
-            category,
-            complete,
-            description,
-            episodes,
-            explicit,
-            id,
-            image,
-            language,
-            owner,
-            subtitle,
-            title,
-            vendor
-        } = this.state.lastSavedPodcast;
-
-        this.setState({
-            author,
-            category,
-            complete,
-            description,
-            episodes,
-            explicit,
-            id,
-            image,
-            language,
-            owner,
-            subtitle,
-            title,
-            vendor
-        });
-    }
-
-    _getNewPodcastValues () {
-        const {
-            author,
-            category,
-            complete,
-            description,
-            episodes,
-            explicit,
-            id,
-            image,
-            language,
-            owner,
-            subtitle,
-            title,
-            vendor
-        } = this.state;
-
-        return {
-            author,
-            category,
-            complete,
-            description,
-            episodes,
-            explicit,
-            id,
-            image,
-            language,
-            owner,
-            subtitle,
-            title,
-            vendor
-        };
-    }
-
-    _checkProperty (property, propertyName) {
-        if (!property) {
-            throw new Error(`${propertyName} shouldn't be empty.`);
-        }
-    }
-
-    // Transitions
-
-    _handlePodcastsListAppear () {
-        const { podcastsList } = this;
-        // console.log('_handlePodcastsListAppear');
-
-        TweenMax.fromTo(podcastsList, 0.6, { heigth: 0 }, { height: '100%' });
-    }
-
-    _handlePodcastsListDisappear () {
-        const { podcastsList } = this;
-        // console.log('_handlePodcastsListDisappear');
-
-        TweenMax.fromTo(podcastsList, 0.6, { heigth: '100%' }, { heigth: 0 });
+        return true;
     }
 
     render () {
+        const { isEdited, isNew } = this.props;
         const {
             author,
             category,
@@ -462,12 +444,10 @@ export default class Podcast extends Component {
             description,
             episodes,
             explicit,
-            id,
             image,
-            isNew,
             language,
-            mode,
-            owner,
+            ownerEmail,
+            ownerName,
             subtitle,
             title,
             vendor
@@ -475,17 +455,17 @@ export default class Podcast extends Component {
 
         // Buttons
 
-        const btnAddEpisode = !complete && mode === 'edit' ? (
+        const btnAddEpisode = !complete && isEdited ? (
             <input
                 className = { Styles.btnAddEpisode }
                 key = 'addEpisode'
                 type = 'button'
-                value = 'Add episode'
+                value = 'New episode'
                 onClick = { this.onAddEpisode }
             />
         ) : null;
 
-        const btnEdit = mode === 'normal' ? (
+        const btnEdit = !isEdited ? (
             <input
                 className = { Styles.btnEdit }
                 type = 'button'
@@ -494,7 +474,7 @@ export default class Podcast extends Component {
             />
         ) : null;
 
-        const btnCancel = mode === 'edit' && !isNew ? (
+        const btnCancel = isEdited && !isNew ? (
             <input
                 className = { Styles.btnCancel }
                 type = 'button'
@@ -503,16 +483,16 @@ export default class Podcast extends Component {
             />
         ) : null;
 
-        const btnPush = mode === 'normal' ? (
+        const btnReturn = !isEdited || isNew ? (
             <input
-                className = { Styles.btnPush }
+                className = { Styles.btnReturn }
                 type = 'button'
-                value = 'Push'
-                onClick = { this.onPushPodcastClicked }
+                value = 'Return'
+                onClick = { this.onReturnClicked }
             />
         ) : null;
 
-        const btnSave = mode === 'edit' ? (
+        const btnSave = isEdited ? (
             <input
                 className = { Styles.btnSave }
                 type = 'button'
@@ -521,30 +501,17 @@ export default class Podcast extends Component {
             />
         ) : null;
 
-        const episodesList = episodes.map((curE) => (
-            <li key = { curE.episode.id }>
-                <Transition
-                    appear
-                    in
-                    timeout = { 600 }
-                    onEnter = { this.handlePodcastAppear }
-                    onExit = { this.handlePodcastDisappear }>
-                    <div ref = { (list) => this.podcastsList = list } >
-                        <Episode
-                            author = { author }
-                            date = { curE.episode.date }
-                            deleteMyself = { this.deleteEpisode }
-                            description = { curE.episode.description }
-                            editMyself = { this.editEpisode }
-                            explicit = { curE.episode.explicit }
-                            id = { curE.episode.id }
-                            mode = { curE.mode }
-                            parentMode = { mode }
-                            saveMyself = { this.saveEpisode }
-                            title = { curE.episode.title }
-                        />
-                    </div>
-                </Transition>
+        const episodesList = episodes.map((item) => (
+            <li key = { item.episode.id }>
+                <Episode
+                    { ...item.episode }
+                    deleteMyself = { this.deleteEpisode }
+                    editMyself = { this.editEpisode }
+                    fieldIsChanged = { this.episodeChanged }
+                    isEdited = { item.isEdited }
+                    isParentEdited = { isEdited }
+                    saveMyself = { this.saveEpisode }
+                />
             </li>
         ));
 
@@ -552,91 +519,83 @@ export default class Podcast extends Component {
             <section className = { Styles.podcastComponent }>
                 { btnCancel }
                 { btnEdit }
-                { btnPush }
+                { btnReturn }
                 { btnSave }
-                <div className = { Styles.header } >
+                <div className = { Styles.header }>
                     <Fields.Title
-                        changeValue = { this.onTitleChanged }
-                        mode = { mode }
+                        changeValue = { this.onFieldChanged }
+                        isEdited = { isEdited }
                         title = { title }
                     />
                     <Fields.Subtitle
-                        changeValue = { this.onSubtitleChanged }
-                        mode = { mode }
+                        changeValue = { this.onFieldChanged }
+                        isEdited = { isEdited }
                         subtitle = { subtitle }
                     />
                     <Fields.Author
                         author = { author }
-                        changeValue = { this.onAuthorChanged }
-                        mode = { mode }
+                        changeValue = { this.onFieldChanged }
+                        isEdited = { isEdited }
                     />
                 </div>
                 <div className = { Styles.padder }>
                     <div className = { Styles.leftStack }>
                         <Fields.Image
-                            changeValue = { this.onImageChanged }
+                            changeValue = { this.onFieldChanged }
                             image = { image }
-                            mode = { mode }
+                            isEdited = { isEdited }
                         />
                         <div className = { Styles.fields }>
-                            <Fields.Id
-                                changeValue = { this.onIdChanged }
-                                id = { id }
-                                mode = { mode }
-                            />
                             <Fields.Vendor
-                                changeValue = { this.onVendorChanged }
-                                mode = { mode }
+                                changeValue = { this.onFieldChanged }
+                                isEdited = { isEdited }
                                 vendor = { vendor }
                             />
                             <Fields.Category
                                 category = { category }
-                                changeValue = { this.onCategoryChanged }
-                                mode = { mode }
+                                changeValue = { this.onFieldChanged }
+                                isEdited = { isEdited }
                             />
                             <Fields.Language
-                                changeValue = { this.onLanguageChanged }
+                                changeValue = { this.onFieldChanged }
+                                isEdited = { isEdited }
                                 language = { language }
-                                mode = { mode }
                             />
                             <Fields.Explicit
-                                changeValue = { this.onExplicitChanged }
+                                changeValue = { this.onFieldChanged }
                                 explicit = { explicit }
-                                mode = { mode }
+                                isEdited = { isEdited }
                             />
                             <Fields.Complete
-                                changeValue = { this.onCompleteChanged }
+                                changeValue = { this.onFieldChanged }
                                 complete = { complete }
-                                mode = { mode }
+                                isEdited = { isEdited }
                             />
                         </div>
                         <Fields.Owner
-                            changeEmail = { this.onOwnerEmailChanged }
-                            changeName = { this.onOwnerNameChanged }
-                            mode = { mode }
-                            owner = { owner }
+                            changeValue = { this.onFieldChanged }
+                            isEdited = { isEdited }
+                            owner = { {
+                                email: ownerEmail,
+                                name:  ownerName
+                            } }
                         />
                     </div>
                     <div className = { Styles.centerStack } >
                         <Fields.Description
-                            changeValue = { this.onDescriptionChanged }
+                            changeValue = { this.onFieldChanged }
                             description = { description }
-                            mode = { mode }
+                            isEdited = { isEdited }
                         />
-                        <div
-                            className = {
-                                `${Styles.episodesTable}
-                                ${mode === 'edit' ? Styles.editMode : ''}`
-                            }>
+                        <div className = { Styles.table }>
                             <div className = { Styles.headers }>
-                                <span>Id</span>
                                 <span>Title</span>
                                 <span>Description</span>
                                 <span>Author</span>
                                 <span>Released</span>
                                 <span>Explicit</span>
                             </div>
-                            <ul className = { Styles.episodesList } >
+                            <ul className = { Styles.rows } >
                                 { episodesList }
                             </ul>
                             { btnAddEpisode }

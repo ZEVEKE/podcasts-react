@@ -6,19 +6,63 @@
     align-items: center;
     margin-top: -1px;
     padding: 3px 0 3px 24px;
+    transition: all .15s ease-out;
     border-top: 1px solid transparent;
     border-right: 1px solid transparent;
     border-bottom: 1px solid darken($paletteLightGrey, 5%);
     border-left: 1px solid transparent;
     border-radius: 2px;
-    grid-template-columns: 5% 18% 29% 19% 14% 9%;
+    grid-template-columns: 20% 30% 20% 15% 9%;
     grid-column-gap: 1.5%;
 
-    &.editMode {
+    span {
+        overflow: hidden;
+        font-size: 12px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+
+        .input {
+            width: 100%;
+            padding: 0;
+            transition: all .15s ease-out;
+            border: 0;
+            outline: 0;
+            background-color: transparent;
+            color: $paletteGrey;
+        }
+
+        &.explicit {
+            text-align: center;
+        }
+    }
+
+    &.isEdited {
         height: 30px;
 
         span {
             line-height: 30px;
+
+            .input {
+                padding: .08em .3em;
+                background-color: $paletteWhite;
+                box-shadow: $paletteLightShadow;
+                color: $paletteGrey;
+                font-size: .95em;
+
+                &::placeholder {
+                    color: darken($paletteLightGrey, 10%);
+                    font-size: .9em;
+                    font-weight: normal;
+                }
+            }
+
+            &.explicit {
+                text-align: center;
+
+                .input {
+                    box-shadow: none;
+                }
+            }
         }
 
         .save {
@@ -34,25 +78,11 @@
         border: 1px solid darken($paletteLightGrey, 5%);
     }
 
-    span {
-        overflow: hidden;
-        font-size: 12px;
-        //line-height: 20px;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-
-    .explicit {
-        text-align: center;
-    }
-
     .delete {
         position: absolute;
-        top: 4px;
         right: -23px;
         width: 18px;
         height: 18px;
-        transition: background-color .15s ease;
         border: 0;
         border-radius: 1px;
         outline: 0;
@@ -73,17 +103,16 @@
         left: 0;
         width: 100%;
         height: 100%;
-        transition: background-color .15s ease;
         border: 0;
         outline: 0;
         opacity: .7;
-        background: url('../../theme/assets/edit.png') no-repeat 10px;
+        background: url('../../theme/assets/edit.png') no-repeat 10px 4px;
         background-size: 4px;
         cursor: pointer;
 
         &:hover {
             opacity: .5;
-            background-color: lighten($paletteGreyBlue, 50%);
+            background-color: lighten($paletteGreyBlue, 53%);
         }
     }
 
@@ -94,7 +123,6 @@
         width: 18px;
         height: 18px;
         padding: 0;
-        transition: background-color .15s ease;
         border: 0;
         border-radius: 1px;
         outline: 0;
@@ -105,7 +133,7 @@
 
         &:hover {
             opacity: .5;
-            background-color: lighten($paletteGreen, 20%);
+            background-color: lighten($paletteGreen, 30%);
         }
     }
 }

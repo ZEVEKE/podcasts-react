@@ -1,21 +1,18 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
-import { Transition } from 'react-transition-group';
-import TweenMax from 'gsap';
+import { CSSTransition, TransitionGroup } from 'react-transition-group';
 
 import Styles from './styles.scss';
-import { categories, emptyEpisode, emptyPodcast, languages, data } from '../Mock';
+import config from '../../adds';
 
 import PodcastsList from '../PodcastsList';
 import Podcast from '../Podcast';
 
 export default class Main extends Component {
     static childContextTypes = {
-        categories:   PropTypes.array.isRequired,
-        emptyEpisode: PropTypes.object.isRequired,
-        emptyPodcast: PropTypes.object.isRequired,
-        languages:    PropTypes.array.isRequired
+        categories: PropTypes.array.isRequired,
+        languages:  PropTypes.array.isRequired
     };
 
     constructor () {
@@ -23,152 +20,180 @@ export default class Main extends Component {
 
         this.fetchPodcasts = ::this._fetchPodcasts;
 
-        this.onPushPodcast = ::this._onPushPodcast;
+        this.onReturnToMenu = ::this._onReturnToMenu;
         this.onOpenPodcast = ::this._onOpenPodcast;
-        this.handlePodcastsListAppear = ::this._handlePodcastsListAppear;
-        this.handlePodcastsListDisappear = ::this._handlePodcastsListDisappear;
-        this.handlePodcastAppear = ::this._handlePodcastAppear;
-        this.handlePodcastDisappear = ::this._handlePodcastDisappear;
+        this.onCancelPodcast = ::this._onCancelPodcast;
+        this.onEditPodcast = ::this._onEditPodcast;
+        this.onSavePodcast = ::this._onSavePodcast;
     }
 
     state = {
         current: {
-            mode: 'normal'
+            isEdited: false,
+            isNew:    false,
+            podcast:  {}
         },
-        page:     `main`,
+        page:     'list',
+        nextPage: 'list',
         podcasts: []
     };
 
     getChildContext () {
         return {
-            categories,
-            emptyEpisode,
-            emptyPodcast,
-            languages
+            categories: config.categories,
+            languages:  config.languages
         };
     }
 
-    componentWillMount () {
-        this.fetchPodcasts();
+    async componentWillMount () {
+        await this.fetchPodcasts();
     }
 
-    _onOpenPodcast (podcast, mode, isNew) {
-        if (
-            typeof podcast !== 'object'
-            || typeof mode !== 'string'
-            || typeof isNew !== 'boolean'
-        ) {
-            throw new Error(`passed arguments should be an object, a string & a boolean value`);
+    shouldComponentUpdate (undefined, nextState) {
+        // Provide normal page changing using animation
+        if (nextState.nextPage !== this.state.nextPage) {
+            nextState.page = '';
+            setTimeout(() => {
+                this.setState((prevState) => ({
+                    page: prevState.nextPage
+                }));
+            }, 250);
+        }
+
+        return true;
+    }
+
+    _onOpenPodcast (podcast, isNew) {
+        if (typeof podcast !== 'object' || typeof isNew !== 'boolean') {
+            throw new Error(`passed arguments should have following types: (object, boolean)`);
         }
 
         this.setState({
             current: {
+                isEdited: isNew,
                 isNew,
-                mode,
                 podcast
             },
-            page: 'podcast'
+            nextPage: 'podcast'
         });
     }
 
-    _onPushPodcast (oldId, newPodcast) {
-        const { podcasts } = this.state;
-        let updated = false;
-        const updPodcasts = podcasts.map((podcast) => {
-            if (podcast.id === oldId) {
-                updated = true;
+    _onCancelPodcast () {
+        this.setState((prevState) => {
+            const { current: { podcast: { id }}, podcasts } = prevState;
 
-                return newPodcast;
+            return {
+                current: {
+                    isEdited: false,
+                    isNew:    false,
+                    podcast:  podcasts.find((item) => item.id === id)
+                }
+            };
+        });
+    }
+
+    _onEditPodcast () {
+        this.setState((prevState) => ({
+            current: {
+                isEdited: true,
+                isNew:    false,
+                podcast:  prevState.current.podcast
             }
+        }));
+    }
 
-            return podcast;
+    _onSavePodcast (podcast) {
+        // TODO post request to server
+        this.setState((prevState) => {
+            const { current: { isNew, podcast: { id }}, podcasts } = prevState;
+            const updatedPodcasts = isNew ?
+                [podcast, ...podcasts]
+                : podcasts.map((p) => p.id === podcast.id ? { ...podcast, id } : p);
+
+            return {
+                podcasts: updatedPodcasts,
+                current:  {
+                    isEdited: false,
+                    isNew:    false,
+                    podcast:  { ...podcast }
+                }
+            };
         });
+    }
 
-        if (!updated) {
-            updPodcasts.push(newPodcast);
-        }
-
+    _onReturnToMenu () {
         this.setState({
-            page:     'main',
-            podcasts: updPodcasts
+            nextPage: 'list'
         });
     }
 
-    _fetchPodcasts () {
-        this.setState({ podcasts: data });
-    }
+    async _fetchPodcasts () {
+        const blob = await fetch('https://s3-eu-west-1.amazonaws.com/lectrum/podcasts.json');
+        const podcasts = await blob.json();
 
-    // Transitions
-
-    _handlePodcastsListAppear () {
-        const { podcastsList } = this;
-
-        TweenMax.fromTo(podcastsList, 0.6, { y: -800 }, { y: 0 });
-    }
-
-    _handlePodcastsListDisappear () {
-        const { podcastsList } = this;
-
-        TweenMax.fromTo(podcastsList, 0.6, { y: 0 }, { y: 800 });
-    }
-
-    _handlePodcastAppear () {
-        const { podcast } = this;
-
-        TweenMax.fromTo(podcast, 0.6, { y: -800 }, { y: 0 });
-    }
-
-    _handlePodcastDisappear () {
-        const { podcast } = this;
-
-        TweenMax.fromTo(podcast, 0.6, { x: 0 }, { x: -1000 });
+        this.setState({ podcasts });
     }
 
     render () {
         const {
-            current,
+            current: {
+                isEdited,
+                isNew,
+                podcast
+            },
             page,
             podcasts
         } = this.state;
 
-        const podcastsList = page === 'main' ? (
-            <Transition
-                appear
-                in
-                timeout = { 600 }
-                onEnter = { this.handlePodcastsListAppear }
-                onExit = { this.handlePodcastsListDisappear }>
-                <div ref = { (list) => this.podcastsList = list } >
+        const renderList = page === 'list' ? (
+            <CSSTransition
+                classNames = { {
+                    enter:       Styles.listEnter,
+                    enterActive: Styles.listEnterActive,
+                    exit:        Styles.listExit,
+                    exitActive:  Styles.listExitActive
+                } }
+                key = { 'list' }
+                timeout = { 500 }>
+                <div>
                     <PodcastsList
                         podcasts = { podcasts }
                         onOpenPodcast = { this.onOpenPodcast }
                     />
                 </div>
-            </Transition>
+            </CSSTransition>
         ) : null;
 
-        const podcast = page === 'podcast' ? (
-            <Transition
-                appear
-                in
-                timeout = { 600 }
-                onEnter = { this.handlePodcastAppear }
-                onExit = { this.handlePodcastDisappear }>
-                <div ref = { (p) => this.podcast = p } >
+        const renderPodcast = page === 'podcast' ? (
+            <CSSTransition
+                classNames = { {
+                    enter:       Styles.podcastEnter,
+                    enterActive: Styles.podcastEnterActive,
+                    exit:        Styles.podcastExit,
+                    exitActive:  Styles.podcastExitActive
+                } }
+                key = { 'podcast' }
+                timeout = { 500 }>
+                <div>
                     <Podcast
-                        isNew = { current.isNew }
-                        mode = { current.mode }
-                        podcast = { current.podcast }
-                        pushMyself = { this.onPushPodcast }
+                        cancelMyself = { this.onCancelPodcast }
+                        editMyself = { this.onEditPodcast }
+                        isEdited = { isEdited }
+                        isNew = { isNew }
+                        podcast = { podcast }
+                        returnToMain = { this.onReturnToMenu }
+                        saveMyself = { this.onSavePodcast }
                     />
                 </div>
-            </Transition>
+            </CSSTransition>
         ) : null;
 
         return (
-            <section className = { Styles.mainComponent } >
-                { podcastsList }
-                { podcast }
+            <section className = { Styles.mainComponent }>
+                <TransitionGroup>
+                    { renderList }
+                    { renderPodcast }
+                </TransitionGroup>
             </section>
         );
     }

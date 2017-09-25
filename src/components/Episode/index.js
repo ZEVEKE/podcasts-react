@@ -1,189 +1,121 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
+import cx from 'class-names';
 import moment from 'moment';
-import { getCurrentTime } from '../../helpers';
 
 import Styles from './styles.scss';
 
 export default class Episode extends Component {
     static propTypes = {
-        author:       PropTypes.string.isRequired,
-        date:         PropTypes.string.isRequired,
-        deleteMyself: PropTypes.func.isRequired,
-        description:  PropTypes.string.isRequired,
-        editMyself:   PropTypes.func.isRequired,
-        explicit:     PropTypes.bool.isRequired,
-        id:           PropTypes.string.isRequired,
-        mode:         PropTypes.string.isRequired,
-        parentMode:   PropTypes.string.isRequired,
-        saveMyself:   PropTypes.func.isRequired,
-        title:        PropTypes.string.isRequired
+        deleteMyself:   PropTypes.func.isRequired,
+        editMyself:     PropTypes.func.isRequired,
+        fieldIsChanged: PropTypes.func.isRequired,
+        id:             PropTypes.string.isRequired,
+        isEdited:       PropTypes.bool.isRequired,
+        isParentEdited: PropTypes.bool.isRequired,
+        saveMyself:     PropTypes.func.isRequired,
+        author:         PropTypes.string,
+        date:           PropTypes.string,
+        description:    PropTypes.string,
+        explicit:       PropTypes.bool,
+        title:          PropTypes.string
+    };
+
+    static defaultProps = {
+        author:         '',
+        date:           '',
+        description:    '',
+        explicit:       false,
+        title:          '',
+        isParentEdited: false
     };
 
     constructor () {
         super();
-        this.onEditClicked = ::this._onEditClicked;
         this.onDeleteClicked = ::this._onDeleteClicked;
+        this.onEditClicked = ::this._onEditClicked;
         this.onSaveClicked = ::this._onSaveClicked;
-
-        this.onExplicitChanged = ::this._onExplicitChanged;
-        this.onDescriptionChanged = ::this._onDescriptionChanged;
-        this.onIdChanged = ::this._onIdChanged;
-        this.onTitleChanged = ::this._onTitleChanged;
-
-        this.getNewEpisodeValues = ::this._getNewEpisodeValues;
     }
-
-    state = {
-        author:      '',
-        date:        getCurrentTime(),
-        description: '',
-        explicit:    false,
-        id:          '',
-        mode:        'normal',
-        parentMode:  '',
-        title:       ''
-    };
 
     componentWillMount () {
         const {
-            author,
             date,
-            description,
-            explicit,
             id,
-            mode,
-            title
+            fieldIsChanged,
+            isEdited
         } = this.props;
 
-        if (!date && mode === 'edit') {
-            this.updateDate = setInterval(() => this.setState({ date: getCurrentTime() }), 1000);
+        if (!date && isEdited) {
+            this.updateDateTimer = setInterval(() => fieldIsChanged(id, 'date'), 1000);
+        }
+    }
+
+    shouldComponentUpdate (nextProps) {
+        let needUpdate = false;
+
+        for (const key in nextProps) {
+            if (nextProps.hasOwnProperty(key)) {
+                if (nextProps[key] !== this.props[key]) {
+                    needUpdate = true;
+                    break;
+                }
+            }
         }
 
-        this.setState({
-            author,
-            date,
-            description,
-            explicit,
-            id,
-            mode,
-            title
-        });
+        return needUpdate;
     }
 
     // On button click handlers
 
     _onDeleteClicked () {
-        const { id, deleteMyself } = this.props;
+        const { deleteMyself, id } = this.props;
+
+        if (this.updateDateTimer) {
+            clearInterval(this.updateDateTimer);
+        }
 
         deleteMyself(id);
     }
 
     _onEditClicked () {
-        const { editMyself, id } = this.props;
+        const { id, editMyself } = this.props;
 
-        this.getNewEpisodeValues();
+        if (this.updateDateTimer) {
+            clearInterval(this.updateDateTimer);
+        }
+
         editMyself(id);
-        this.setState({ mode: 'edit' });
     }
 
     _onSaveClicked () {
-        if (this.updateDate !== null) {
-            clearInterval(this.updateDate);
-        }
-        const { author, saveMyself, id: oldId } = this.props;
-        const { id, title, description, date, explicit } = this.state;
+        const { id, saveMyself } = this.props;
 
-        try {
-            if (!id) {
-                throw new Error(`Id shouldn't be empty`);
-            }
-
-            if (!description) {
-                throw new Error(`Description shouldn't be empty`);
-            }
-
-            if (!title) {
-                throw new Error(`Title shouldn't be empty`);
-            }
-        } catch (err) {
-            alert(err.message); // eslint-disable-line
-
-            return;
+        if (this.updateDateTimer) {
+            clearInterval(this.updateDateTimer);
         }
 
-        saveMyself(
-            oldId,
-            {
-                author,
-                date,
-                description,
-                explicit,
-                id,
-                title
-            }
-        );
-
-        this.setState({ mode: 'normal ' });
-    }
-
-
-    // other functions
-
-    _getNewEpisodeValues () {
-        const {
-            author,
-            description,
-            explicit,
-            id,
-            title
-        } = this.state;
-
-        return {
-            author,
-            description,
-            explicit,
-            id,
-            title
-        };
-    }
-
-    // on element event handlers
-
-    _onIdChanged (event) {
-        this.setState({
-            id: event.target.value
-        });
-    }
-
-    _onTitleChanged (event) {
-        this.setState({
-            title: event.target.value
-        });
-    }
-
-    _onDescriptionChanged (event) {
-        this.setState({
-            description: event.target.value
-        });
-    }
-
-    _onExplicitChanged (event) {
-        this.setState({
-            explicit: event.target.checked
-        });
+        saveMyself(id);
     }
 
     // Render
 
     render () {
-        const { id, title, description, author, explicit, date, mode: ownMode } = this.state;
-        const { parentMode } = this.props;
+        const {
+            author,
+            date,
+            description,
+            explicit,
+            fieldIsChanged,
+            id,
+            isParentEdited,
+            isEdited,
+            title
+        } = this.props;
 
         // Buttons
 
-        const btnDelete = parentMode === 'edit' ? (
+        const btnDelete = isParentEdited ? (
             <input
                 className = { Styles.delete }
                 type = 'button'
@@ -191,7 +123,7 @@ export default class Episode extends Component {
             />
         ) : null;
 
-        const btnEdit = parentMode === 'edit' && ownMode === 'normal' ? (
+        const btnEdit = isParentEdited && !isEdited ? (
             <input
                 className = { Styles.edit }
                 type = 'button'
@@ -199,7 +131,7 @@ export default class Episode extends Component {
             />
         ) : null;
 
-        const btnSave = ownMode === 'edit' ? (
+        const btnSave = isEdited ? (
             <input
                 className = { Styles.save }
                 type = 'button'
@@ -210,85 +142,65 @@ export default class Episode extends Component {
         // Elements
 
         const authorElement = (
-            <span className = { Styles }>
+            <span>
                 { author }
             </span>
         );
 
-        const idElement = (
-            <span className = { Styles }>
-                {
-                    ownMode === 'edit' ? (
-                        <input
-                            placeholder = 'Id'
-                            type = 'text'
-                            value = { id }
-                            onChange = { this.onIdChanged }
-                        />
-                    ) : id
-                }
-            </span>
-        );
-
         const dateElement = (
-            <span className = { Styles }>
-                { moment(date).format('l') }
+            <span>
+                { moment(date).format('LTS') }
             </span>
         );
 
         const descriptionElement = (
-            <span className = { Styles.description }>
-                {
-                    ownMode === 'edit' ? (
-                        <input
-                            placeholder = 'description'
-                            type = 'text'
-                            value = { description }
-                            onChange = { this.onDescriptionChanged }
-                        />
-                    ) : description
-                }
+            <span>
+                <input
+                    className = { Styles.input }
+                    disabled = { !isEdited || !isParentEdited }
+                    placeholder = 'description'
+                    type = 'text'
+                    value = { description }
+                    onChange = { (e) => fieldIsChanged(id, 'description', e) }
+                />
             </span>
         );
 
         const explicitElement = (
             <span className = { Styles.explicit }>
-                {
-                    ownMode === 'edit' ? (
-                        <input
-                            type = 'checkbox'
-                            value = { explicit }
-                            onChange = { this.onExplicitChanged }
-                        />
-                    ) : explicit ? 'Yes' : 'No'
-                }
+                <input
+                    checked = { explicit }
+                    className = { Styles.input }
+                    disabled = { !isEdited }
+                    type = { isEdited ? 'checkbox' : 'text' }
+                    value = { explicit ? 'Yes' : 'No' }
+                    onChange = { (e) => fieldIsChanged(id, 'explicit', e) }
+                />
             </span>
         );
 
         const titleElement = (
-            <span className = { Styles }>
-                {
-                    ownMode === 'edit' ? (
-                        <input
-                            placeholder = 'Title'
-                            type = 'text'
-                            value = { title }
-                            onChange = { this.onTitleChanged }
-                        />
-                    ) : title
-                }
+            <span>
+                <input
+                    className = { Styles.input }
+                    disabled = { !isEdited || !isParentEdited }
+                    placeholder = 'Title'
+                    type = 'text'
+                    value = { title }
+                    onChange = { (e) => fieldIsChanged(id, 'title', e) }
+                />
             </span>
         );
 
+        const episodeStyle = cx({
+            [Styles.episodeComponent]: true,
+            [Styles.isEdited]:         isEdited
+        });
+
         return (
-            <div
-                className = {
-                    `${Styles.episodeComponent}
-                     ${ownMode === 'edit' ? Styles.editMode : ''}`
-                }>
+            <div className = { episodeStyle }>
                 { btnEdit }
                 { btnSave }
-                { idElement }
                 { titleElement }
                 { descriptionElement }
                 { authorElement }

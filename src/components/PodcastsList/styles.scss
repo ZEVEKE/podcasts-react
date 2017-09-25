@@ -1,6 +1,6 @@
 @import '../../theme/palette';
 
-.podcastsListComponent {
+.listComponent {
     position: relative;
     min-height: 540px;
     padding: 24px 40px;
@@ -35,31 +35,40 @@
                 cursor: pointer;
             }
 
-            img {
+            .imgContainer {
+                display: block;
                 width: 128px;
                 height: 128px;
-                box-shadow: $paletteShadow;
-            }
+                overflow: hidden;
 
-            h2 {
-                margin: 14px 0 0;
-                color: $paletteDarkGrey;
-                font-size: 11px;
-                line-height: 14px;
-
-                &:hover {
-                    text-decoration: underline;
+                img {
+                    width: 100%;
+                    height: auto;
+                    box-shadow: $paletteShadow;
                 }
             }
 
-            span {
-                display: block;
-                color: $paletteGrey;
-                font-size: 9px;
-                line-height: 14px;
+            .textContainer {
+                h2 {
+                    margin: 14px 0 0;
+                    color: $paletteDarkGrey;
+                    font-size: 11px;
+                    line-height: 14px;
 
-                &:hover {
-                    text-decoration: underline;
+                    &:hover {
+                        text-decoration: underline;
+                    }
+                }
+
+                span {
+                    display: block;
+                    color: $paletteGrey;
+                    font-size: 9px;
+                    line-height: 14px;
+
+                    &:hover {
+                        text-decoration: underline;
+                    }
                 }
             }
 
@@ -78,20 +87,21 @@
         }
     }
 
-    .addPodcast {
+    .btnAdd {
         position: absolute;
         right: 60px;
         bottom: 34px;
         width: 80px;
         height: 28px;
+        padding: 0;
         border: 1px solid $paletteBlue;
-        border-radius: 2px;
+        border-radius: 4px;
         outline: 0;
         background-color: $paletteBlue;
         color: $paletteWhite;
-        font-size: 12px;
+        font-size: 13px;
         letter-spacing: 1px;
-        line-height: 15px;
+        line-height: 28px;
         cursor: pointer;
 
         &:hover {
