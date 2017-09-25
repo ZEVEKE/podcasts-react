@@ -1,0 +1,138 @@
+[
+  {
+    "group": "Arts",
+    "list": [
+      "Design",
+      "Fashion & Beauty",
+      "Food",
+      "Literature",
+      "Performing Arts",
+      "Visual Arts"
+    ]
+  },
+  {
+    "group": "Business",
+    "list": [
+      "Business News",
+      "Careers",
+      "Investing",
+      "Management & Marketing",
+      "Shopping"
+    ]
+  },
+  {
+    "group": "Comedy",
+    "list": [
+      "Comedy"
+    ]
+  },
+  {
+    "group": "Education",
+    "list": [
+      "Educational Technology",
+      "Higher Education",
+      "K-12",
+      "Language Courses",
+      "Training"
+    ]
+  },
+  {
+    "group": "Games & Hobbies",
+    "list": [
+      "Automotive",
+      "Aviation",
+      "Hobbies",
+      "Other Games",
+      "Video Games"
+    ]
+  },
+  {
+    "group": "Government & Organizations",
+    "list": [
+      "Local",
+      "National",
+      "Non-Profit",
+      "Regional"
+    ]
+  },
+  {
+    "group": "Health",
+    "list": [
+      "Alternative Health",
+      "Fitness & Nutrition",
+      "Self-Help",
+      "Sexuality"
+    ]
+  },
+  {
+    "group": "Kids & Family",
+    "list": [
+      "Kids & Family"
+    ]
+  },
+  {
+    "group": "Music",
+    "list": [
+      "Music"
+    ]
+  },
+  {
+    "group": "News & Politics",
+    "list": [
+      "News & Politics"
+    ]
+  },
+  {
+    "group": "Religion & Spirituality",
+    "list": [
+      "Buddhism",
+      "Christianity",
+      "Hinduism",
+      "Islam",
+      "Judaism",
+      "Other",
+      "Spirituality"
+    ]
+  },
+  {
+    "group": "Science & Medicine",
+    "list": [
+      "Medicine",
+      "Natural Sciences",
+      "Social Sciences"
+    ]
+  },
+  {
+    "group": "Society & Culture",
+    "list": [
+      "History",
+      "Personal Journals",
+      "Philosophy",
+      "Places & Travel"
+    ]
+  },
+  {
+    "group": "Sports & Recreation",
+    "list": [
+      "Amateur",
+      "College & High School",
+      "Outdoor",
+      "Professional"
+    ]
+  },
+  {
+    "group": "Technology",
+    "list": [
+      "Gadgets",
+      "Tech News",
+      "Podcasting",
+      "Software How-To"
+    ]
+  },
+  {
+    "group": "TV & Film",
+    "list": [
+      "TV & Film"
+    ]
+  }
+]
