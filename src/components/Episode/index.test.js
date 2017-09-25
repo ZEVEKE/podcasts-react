@@ -1,150 +1,78 @@
 import React from 'react';
 import { shallow } from 'enzyme';
 
-import { episode } from './Mock/data.json';
-
-import { createEpisode, exitWithoutSaving } from '../Podcast';
+import { getUniqueID, getCurrentTime } from '../../helpers';
 import Episode from './';
+import Podcast from '../Podcast';
 
-const state = {
-    mode: `preview`
-};
+const podcastInstance = new Podcast();
+
 const props = {
-    id:          '001',
-    title:       'TITLE',
-    description: 'DESCRIPTION',
-    release:     'RELEASE',
-    createEpisode,
-    exitWithoutSaving
+    author:         'John Wilkinson',
+    date:           getCurrentTime(),
+    deleteMyself:   podcastInstance.deleteEpisode,
+    description:    'The description',
+    editMyself:     podcastInstance.editEpisode,
+    explicit:       false,
+    fieldIsChanged: podcastInstance.episodeChanged,
+    id:             getUniqueID(15),
+    isEdited:       false,
+    isParentEdited: false,
+    saveMyself:     podcastInstance.saveEpisode,
+    title:          'The title'
 };
 
-const result = shallow(
+let result = shallow(
     <Episode
-        createEpisode = { props.createEpisode }
-        description = { props.description }
-        exitWithoutSaving = { props.exitWithoutSaving }
-        id = { props.id }
-        release = { props.release }
-        title = { props.title }
-    />, { state }
+        { ...props }
+    />
 );
-const message = 'Lorem ipsum';
-const {
-    handleEdit,
-    handleTitleInputChange,
-    handleDescriptionInputChange,
-    handleExplicitInputClicked,
-    handleSave,
-    handleCancel
-} = new Episode();
+const onDeleteClicked = new Episode().onDeleteClicked;
+const onEditClicked = new Episode().onEditClicked;
+const onSaveClicked = new Episode().onSaveClicked;
 
 describe(`Episode`, () => {
-    test(`handleEdit is a function`, () => {
-        expect(typeof handleEdit).toBe('function');
+    test(`onDeleteClicked is a function`, () => {
+        expect(typeof onDeleteClicked).toBe('function');
     });
 
-    test(`handleTitleInputChange is a function`, () => {
-        expect(typeof handleTitleInputChange).toBe('function');
+    test(`onEditClicked is a function`, () => {
+        expect(typeof onEditClicked).toBe('function');
     });
 
-    test(`handleDescriptionInputChange is a function`, () => {
-        expect(typeof handleDescriptionInputChange).toBe('function');
+    test(`onSaveClicked is a function`, () => {
+        expect(typeof onSaveClicked).toBe('function');
     });
 
-    test(`handleExplicitInputChange is a function`, () => {
-        expect(typeof handleExplicitInputClicked).toBe('function');
+    test(`Should have 1 'div' element`, () => {
+        expect(result.find(`div`).length).toBe(1);
     });
 
-    test(`handleSave is a function`, () => {
-        expect(typeof handleSave).toBe('function');
+    test(`Should have 5 'input' elements`, () => {
+        result = shallow(
+            <Episode
+                { ...props }
+                isEdited
+                isParentEdited
+            />
+        );
+
+        expect(result.find(`input`).length).toBe(5);
     });
 
-    test(`handleCancel is a function`, () => {
-        expect(typeof handleCancel).toBe('function');
+    test(`Fourth 'input' element should have 'checkbox' type if 'isEdited' prop is 'true'`, () => {
+        result = shallow(
+            <Episode
+                { ...props }
+                isEdited
+                isParentEdited
+            />
+        );
+
+        expect(result.find(`input`).get(3).props.type).toBe('checkbox');
     });
 
-
-    test(`Should have 1 'form' element`, () => {
-        expect(result.find(`form`).length).toBe(1);
+    test(`Fourth 'input' element should have value is equaled to received 'explicit' prop`, () => {
+        expect(result.find('input').get(3).props.checked).toBe(false);
     });
-    //
-    // test(`Should have 1 'title' element`, () => {
-    //     expect(result.find(`title`).length).toBe(1);
-    // });
-    //
-    // test(`Should have 1 'description' element`, () => {
-    //     expect(result.find(`description`).length).toBe(1);
-    // });
-    //
-    // test(`Should have 1 'explicit' element`, () => {
-    //     expect(result.find(`explicit`).length).toBe(1);
-    // });
-
-    test(`Should have 5 'div' elements, when state.mode = 'preview'`, () => {
-        expect(result.find(`div`).length).toBe(5);
-    });
-
-    test(`Should have 1 'input' elements, when state.mode = 'preview'`, () => {
-        expect(result.find(`input`).length).toBe(1);
-    });
-
-
-    test(`Should have 4 'div' elements, when state.mode = 'edit'`, () => {
-        result.setState({ mode: 'edit' });
-
-        expect(result.find(`div`).length).toBe(4);
-    });
-
-    test(`Should have 1 'textarea' elements, when state.mode = 'preview'`, () => {
-        expect(result.find(`textarea`).length).toBe(1);
-    });
-
-    test(`Should have 3 'input' elements, when state.mode = 'editing'`, () => {
-        result.setState({ mode: 'edit' });
-        expect(result.find(`input`).length).toBe(3);
-    });
-
-    test(`Should have 1 'submit' element, when state.mode = 'editing'`, () => {
-        expect(result.find(`submit`).length).toBe(1);
-    });
-
-    test(`component state & input 'title' values should reflect according changes if any text input provided`, () => {
-        result.find('title').simulate('change', {
-            target: {
-                value: message
-            }
-        });
-
-        expect(result.state().title).toBe(message);
-        expect(result.find('title').get(0).props.value).toBe(message);
-    });
-
-    test(`component state & input 'description' values should reflect according changes if any text input provided`, () => {
-        result.find('description').simulate('change', {
-            target: {
-                value: message
-            }
-        });
-
-        expect(result.state().description).toBe(message);
-        expect(result.find('description').get(0).props.value).toBe(message);
-    });
-
-    test(`component state & input 'explicit' values should reflect according changes if checkbox state changed`, () => {
-        result.find('explicit').simulate('change', {
-            target: {
-                value: message
-            }
-        });
-
-        expect(result.state().description).toBe(message);
-        expect(result.find('description').get(0).props.value).toBe(message);
-    });
-});
-
-describe(`Episode.handleInputIdChange`, () => {
-});
-
-describe(`Episode.handleInputNameChange`, () => {
-    expect(typeof handleInputIdChange).toBe('function');
 });
